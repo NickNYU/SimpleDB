@@ -14,13 +14,13 @@ import java.util.*;
 public class OrderBy extends Operator {
 
     private static final long serialVersionUID = 1L;
-    private OpIterator child;
-    private final TupleDesc td;
-    private final List<Tuple> childTups = new ArrayList<>();
-    private final int orderByField;
-    private final String orderByFieldName;
-    private Iterator<Tuple> it;
-    private final boolean asc;
+    private OpIterator        child;
+    private final TupleDesc   td;
+    private final List<Tuple> childTups        = new ArrayList<>();
+    private final int         orderByField;
+    private final String      orderByFieldName;
+    private Iterator<Tuple>   it;
+    private final boolean     asc;
 
     /**
      * Creates a new OrderBy node over the tuples from the iterator.
@@ -39,28 +39,24 @@ public class OrderBy extends Operator {
         this.orderByFieldName = td.getFieldName(orderbyField);
         this.asc = asc;
     }
-    
-    public boolean isASC()
-    {
-	return this.asc;
+
+    public boolean isASC() {
+        return this.asc;
     }
-    
-    public int getOrderByField()
-    {
+
+    public int getOrderByField() {
         return this.orderByField;
     }
-    
-    public String getOrderFieldName()
-    {
-	return this.orderByFieldName;
+
+    public String getOrderFieldName() {
+        return this.orderByFieldName;
     }
-    
+
     public TupleDesc getTupleDesc() {
         return td;
     }
 
-    public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException {
         child.open();
         // load all the tuples in a collection, and sort it
         while (child.hasNext())
@@ -106,7 +102,7 @@ public class OrderBy extends Operator {
 }
 
 class TupleComparator implements Comparator<Tuple> {
-    final int field;
+    final int     field;
     final boolean asc;
 
     public TupleComparator(int field, boolean asc) {
@@ -124,5 +120,5 @@ class TupleComparator implements Comparator<Tuple> {
         else
             return asc ? -1 : 1;
     }
-    
+
 }

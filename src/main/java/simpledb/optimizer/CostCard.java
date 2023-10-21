@@ -1,4 +1,5 @@
 package simpledb.optimizer;
+
 import simpledb.optimizer.JoinOptimizer;
 import simpledb.optimizer.LogicalJoinNode;
 
@@ -9,9 +10,9 @@ import java.util.List;
 */
 public class CostCard {
     /** The cost of the optimal subplan */
-    public double cost;
+    public double                cost;
     /** The cardinality of the optimal subplan */
-    public int card;
+    public int                   card;
     /** The optimal subplan */
     public List<LogicalJoinNode> plan;
 }

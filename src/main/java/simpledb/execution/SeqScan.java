@@ -52,8 +52,7 @@ public class SeqScan implements OpIterator {
     /**
      * @return Return the alias of the table this operator scans.
      * */
-    public String getAlias()
-    {
+    public String getAlias() {
         // some code goes here
         return null;
     }
@@ -102,8 +101,7 @@ public class SeqScan implements OpIterator {
         return false;
     }
 
-    public Tuple next() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
+    public Tuple next() throws NoSuchElementException, TransactionAbortedException, DbException {
         // some code goes here
         return null;
     }
@@ -112,8 +110,7 @@ public class SeqScan implements OpIterator {
         // some code goes here
     }
 
-    public void rewind() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void rewind() throws DbException, NoSuchElementException, TransactionAbortedException {
         // some code goes here
     }
 }

@@ -21,12 +21,12 @@ import java.util.*;
 
 public class Query implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long     serialVersionUID = 1L;
 
-    transient private OpIterator op;
+    transient private OpIterator  op;
     transient private LogicalPlan logicalPlan;
-    final TransactionId tid;
-    transient private boolean started = false;
+    final TransactionId           tid;
+    transient private boolean     started          = false;
 
     public TransactionId getTransactionId() {
         return this.tid;
@@ -57,8 +57,7 @@ public class Query implements Serializable {
         tid = t;
     }
 
-    public void start() throws DbException,
-            TransactionAbortedException {
+    public void start() throws DbException, TransactionAbortedException {
         op.open();
 
         started = true;
@@ -85,8 +84,7 @@ public class Query implements Serializable {
      * @throws TransactionAbortedException
      *             If the transaction is aborted (e.g., due to a deadlock)
      */
-    public Tuple next() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public Tuple next() throws DbException, NoSuchElementException, TransactionAbortedException {
         if (!started)
             throw new DbException("Database not started.");
 

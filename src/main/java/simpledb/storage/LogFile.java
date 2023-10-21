@@ -1,4 +1,3 @@
-
 package simpledb.storage;
 
 import simpledb.common.Database;
@@ -75,25 +74,25 @@ for each active transaction.
 */
 public class LogFile {
 
-    final File logFile;
+    final File               logFile;
     private RandomAccessFile raf;
-    Boolean recoveryUndecided; // no call to recover() and no append to log
+    Boolean                  recoveryUndecided;                    // no call to recover() and no append to log
 
-    static final int ABORT_RECORD = 1;
-    static final int COMMIT_RECORD = 2;
-    static final int UPDATE_RECORD = 3;
-    static final int BEGIN_RECORD = 4;
-    static final int CHECKPOINT_RECORD = 5;
-    static final long NO_CHECKPOINT_ID = -1;
+    static final int         ABORT_RECORD        = 1;
+    static final int         COMMIT_RECORD       = 2;
+    static final int         UPDATE_RECORD       = 3;
+    static final int         BEGIN_RECORD        = 4;
+    static final int         CHECKPOINT_RECORD   = 5;
+    static final long        NO_CHECKPOINT_ID    = -1;
 
-    final static int INT_SIZE = 4;
-    final static int LONG_SIZE = 8;
+    final static int         INT_SIZE            = 4;
+    final static int         LONG_SIZE           = 8;
 
-    long currentOffset = -1;//protected by this
-//    int pageSize;
-    int totalRecords = 0; // for PatchTest //protected by this
+    long                     currentOffset       = -1;              //protected by this
+                                                                    //    int pageSize;
+    int                      totalRecords        = 0;              // for PatchTest //protected by this
 
-    final Map<Long,Long> tidToFirstLogRecord = new HashMap<>();
+    final Map<Long, Long>    tidToFirstLogRecord = new HashMap<>();
 
     /** Constructor.
         Initialize and back the log file with the specified file.
@@ -107,14 +106,14 @@ public class LogFile {
         @param f The log file's name
     */
     public LogFile(File f) throws IOException {
-	this.logFile = f;
+        this.logFile = f;
         raf = new RandomAccessFile(f, "rw");
         recoveryUndecided = true;
 
         // install shutdown hook to force cleanup on close
         // Runtime.getRuntime().addShutdownHook(new Thread() {
-                // public void run() { shutdown(); }
-            // });
+        // public void run() { shutdown(); }
+        // });
 
         //XXX WARNING -- there is nothing that verifies that the specified
         // log file actually corresponds to the current catalog.
@@ -127,7 +126,7 @@ public class LogFile {
     // the log.
     void preAppend() throws IOException {
         totalRecords++;
-        if(recoveryUndecided){
+        if (recoveryUndecided) {
             recoveryUndecided = false;
             raf.seek(0);
             raf.setLength(0);
@@ -140,7 +139,7 @@ public class LogFile {
     public synchronized int getTotalRecords() {
         return totalRecords;
     }
-    
+
     /** Write an abort record to the log for the specified tid, force
         the log to disk, and perform a rollback
         @param tid The aborting transaction.
@@ -151,7 +150,7 @@ public class LogFile {
 
         synchronized (Database.getBufferPool()) {
 
-            synchronized(this) {
+            synchronized (this) {
                 preAppend();
                 //Debug.log("ABORT");
                 //should we verify that this is a live transaction?
@@ -196,9 +195,7 @@ public class LogFile {
 
         @see Page#getBeforeImage
     */
-    public  synchronized void logWrite(TransactionId tid, Page before,
-                                       Page after)
-        throws IOException  {
+    public synchronized void logWrite(TransactionId tid, Page before, Page after) throws IOException {
         Debug.log("WRITE, offset = " + raf.getFilePointer());
         preAppend();
         /* update record conists of
@@ -212,15 +209,15 @@ public class LogFile {
         raf.writeInt(UPDATE_RECORD);
         raf.writeLong(tid.getId());
 
-        writePageData(raf,before);
-        writePageData(raf,after);
+        writePageData(raf, before);
+        writePageData(raf, after);
         raf.writeLong(currentOffset);
         currentOffset = raf.getFilePointer();
 
         Debug.log("WRITE OFFSET = " + currentOffset);
     }
 
-    void writePageData(RandomAccessFile raf, Page p) throws IOException{
+    void writePageData(RandomAccessFile raf, Page p) throws IOException {
         PageId pid = p.getId();
         int[] pageInfo = pid.serialize();
 
@@ -262,10 +259,10 @@ public class LogFile {
             Constructor<?>[] idConsts = idClass.getDeclaredConstructors();
             int numIdArgs = raf.readInt();
             Object[] idArgs = new Object[numIdArgs];
-            for (int i = 0; i<numIdArgs;i++) {
+            for (int i = 0; i < numIdArgs; i++) {
                 idArgs[i] = raf.readInt();
             }
-            pid = (PageId)idConsts[0].newInstance(idArgs);
+            pid = (PageId) idConsts[0].newInstance(idArgs);
 
             Constructor<?>[] pageConsts = pageClass.getDeclaredConstructors();
             int pageSize = raf.readInt();
@@ -277,10 +274,10 @@ public class LogFile {
             pageArgs[0] = pid;
             pageArgs[1] = pageData;
 
-            newPage = (Page)pageConsts[0].newInstance(pageArgs);
+            newPage = (Page) pageConsts[0].newInstance(pageArgs);
 
             //            Debug.log("READ PAGE OF TYPE " + pageClassName + ", table = " + newPage.getId().getTableId() + ", page = " + newPage.getId().pageno());
-        } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException e){
+        } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
             throw new IOException();
         }
@@ -292,10 +289,9 @@ public class LogFile {
         @param tid The transaction that is beginning
 
     */
-    public synchronized  void logXactionBegin(TransactionId tid)
-        throws IOException {
+    public synchronized void logXactionBegin(TransactionId tid) throws IOException {
         Debug.log("BEGIN");
-        if(tidToFirstLogRecord.get(tid.getId()) != null){
+        if (tidToFirstLogRecord.get(tid.getId()) != null) {
             System.err.print("logXactionBegin: already began this tid\n");
             throw new IOException("double logXactionBegin()");
         }
@@ -402,26 +398,26 @@ public class LogFile {
                 logNew.writeLong(record_tid);
 
                 switch (type) {
-                case UPDATE_RECORD:
-                    Page before = readPageData(raf);
-                    Page after = readPageData(raf);
+                    case UPDATE_RECORD:
+                        Page before = readPageData(raf);
+                        Page after = readPageData(raf);
 
-                    writePageData(logNew, before);
-                    writePageData(logNew, after);
-                    break;
-                case CHECKPOINT_RECORD:
-                    int numXactions = raf.readInt();
-                    logNew.writeInt(numXactions);
-                    while (numXactions-- > 0) {
-                        long xid = raf.readLong();
-                        long xoffset = raf.readLong();
-                        logNew.writeLong(xid);
-                        logNew.writeLong((xoffset - minLogRecord) + LONG_SIZE);
-                    }
-                    break;
-                case BEGIN_RECORD:
-                    tidToFirstLogRecord.put(record_tid,newStart);
-                    break;
+                        writePageData(logNew, before);
+                        writePageData(logNew, after);
+                        break;
+                    case CHECKPOINT_RECORD:
+                        int numXactions = raf.readInt();
+                        logNew.writeInt(numXactions);
+                        while (numXactions-- > 0) {
+                            long xid = raf.readLong();
+                            long xoffset = raf.readLong();
+                            logNew.writeLong(xid);
+                            logNew.writeLong((xoffset - minLogRecord) + LONG_SIZE);
+                        }
+                        break;
+                    case BEGIN_RECORD:
+                        tidToFirstLogRecord.put(record_tid, newStart);
+                        break;
                 }
 
                 //all xactions finish with a pointer
@@ -433,7 +429,8 @@ public class LogFile {
             }
         }
 
-        Debug.log("TRUNCATING LOG;  WAS " + raf.length() + " BYTES ; NEW START : " + minLogRecord + " NEW LENGTH: " + (raf.length() - minLogRecord));
+        Debug.log("TRUNCATING LOG;  WAS " + raf.length() + " BYTES ; NEW START : " + minLogRecord + " NEW LENGTH: "
+                  + (raf.length() - minLogRecord));
 
         raf.close();
         logFile.delete();
@@ -454,10 +451,9 @@ public class LogFile {
 
         @param tid The transaction to rollback
     */
-    public void rollback(TransactionId tid)
-        throws NoSuchElementException, IOException {
+    public void rollback(TransactionId tid) throws NoSuchElementException, IOException {
         synchronized (Database.getBufferPool()) {
-            synchronized(this) {
+            synchronized (this) {
                 preAppend();
                 // some code goes here
             }
@@ -470,7 +466,7 @@ public class LogFile {
     */
     public synchronized void shutdown() {
         try {
-            logCheckpoint();  //simple way to shutdown is to write a checkpoint record
+            logCheckpoint(); //simple way to shutdown is to write a checkpoint record
             raf.close();
         } catch (IOException e) {
             System.out.println("ERROR SHUTTING DOWN -- IGNORING.");
@@ -488,7 +484,7 @@ public class LogFile {
                 recoveryUndecided = false;
                 // some code goes here
             }
-         }
+        }
     }
 
     /** Print out a human readable represenation of the log */
@@ -508,53 +504,57 @@ public class LogFile {
                 System.out.println((raf.getFilePointer() - LONG_SIZE) + ": TID " + cpTid);
 
                 switch (cpType) {
-                case BEGIN_RECORD:
-                    System.out.println(" (BEGIN)");
-                    System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
-                    break;
-                case ABORT_RECORD:
-                    System.out.println(" (ABORT)");
-                    System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
-                    break;
-                case COMMIT_RECORD:
-                    System.out.println(" (COMMIT)");
-                    System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
-                    break;
+                    case BEGIN_RECORD:
+                        System.out.println(" (BEGIN)");
+                        System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
+                        break;
+                    case ABORT_RECORD:
+                        System.out.println(" (ABORT)");
+                        System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
+                        break;
+                    case COMMIT_RECORD:
+                        System.out.println(" (COMMIT)");
+                        System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
+                        break;
 
-                case CHECKPOINT_RECORD:
-                    System.out.println(" (CHECKPOINT)");
-                    int numTransactions = raf.readInt();
-                    System.out.println((raf.getFilePointer() - INT_SIZE) + ": NUMBER OF OUTSTANDING RECORDS: " + numTransactions);
+                    case CHECKPOINT_RECORD:
+                        System.out.println(" (CHECKPOINT)");
+                        int numTransactions = raf.readInt();
+                        System.out.println((raf.getFilePointer() - INT_SIZE) + ": NUMBER OF OUTSTANDING RECORDS: "
+                                           + numTransactions);
 
-                    while (numTransactions-- > 0) {
-                        long tid = raf.readLong();
-                        long firstRecord = raf.readLong();
-                        System.out.println((raf.getFilePointer() - (LONG_SIZE + LONG_SIZE)) + ": TID: " + tid);
-                        System.out.println((raf.getFilePointer() - LONG_SIZE) + ": FIRST LOG RECORD: " + firstRecord);
-                    }
-                    System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
+                        while (numTransactions-- > 0) {
+                            long tid = raf.readLong();
+                            long firstRecord = raf.readLong();
+                            System.out.println((raf.getFilePointer() - (LONG_SIZE + LONG_SIZE)) + ": TID: " + tid);
+                            System.out.println((raf.getFilePointer() - LONG_SIZE) + ": FIRST LOG RECORD: "
+                                               + firstRecord);
+                        }
+                        System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
 
-                    break;
-                case UPDATE_RECORD:
-                    System.out.println(" (UPDATE)");
+                        break;
+                    case UPDATE_RECORD:
+                        System.out.println(" (UPDATE)");
 
-                    long start = raf.getFilePointer();
-                    Page before = readPageData(raf);
+                        long start = raf.getFilePointer();
+                        Page before = readPageData(raf);
 
-                    long middle = raf.getFilePointer();
-                    Page after = readPageData(raf);
+                        long middle = raf.getFilePointer();
+                        Page after = readPageData(raf);
 
-                    System.out.println(start + ": before image table id " + before.getId().getTableId());
-                    System.out.println((start + INT_SIZE) + ": before image page number " + before.getId().getPageNumber());
-                    System.out.println((start + INT_SIZE) + " TO " + (middle - INT_SIZE) + ": page data");
+                        System.out.println(start + ": before image table id " + before.getId().getTableId());
+                        System.out.println((start + INT_SIZE) + ": before image page number "
+                                           + before.getId().getPageNumber());
+                        System.out.println((start + INT_SIZE) + " TO " + (middle - INT_SIZE) + ": page data");
 
-                    System.out.println(middle + ": after image table id " + after.getId().getTableId());
-                    System.out.println((middle + INT_SIZE) + ": after image page number " + after.getId().getPageNumber());
-                    System.out.println((middle + INT_SIZE) + " TO " + (raf.getFilePointer()) + ": page data");
+                        System.out.println(middle + ": after image table id " + after.getId().getTableId());
+                        System.out.println((middle + INT_SIZE) + ": after image page number "
+                                           + after.getId().getPageNumber());
+                        System.out.println((middle + INT_SIZE) + " TO " + (raf.getFilePointer()) + ": page data");
 
-                    System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
+                        System.out.println(raf.getFilePointer() + ": RECORD START OFFSET: " + raf.readLong());
 
-                    break;
+                        break;
                 }
 
             } catch (EOFException e) {
@@ -567,7 +567,7 @@ public class LogFile {
         raf.seek(curOffset);
     }
 
-    public  synchronized void force() throws IOException {
+    public synchronized void force() throws IOException {
         raf.getChannel().force(true);
     }
 

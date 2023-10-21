@@ -1,4 +1,5 @@
 package simpledb;
+
 import simpledb.common.DbException;
 import simpledb.common.Type;
 import simpledb.common.Utility;
@@ -9,8 +10,7 @@ import simpledb.transaction.TransactionId;
 import java.io.*;
 
 public class SimpleDb {
-    public static void main (String[] args)
-            throws DbException, TransactionAbortedException {
+    public static void main(String[] args) throws DbException, TransactionAbortedException {
         // convert a file
         switch (args[0]) {
             case "convert":
@@ -50,8 +50,8 @@ public class SimpleDb {
                             fieldSeparator = args[4].charAt(0);
                     }
 
-                    HeapFileEncoder.convert(sourceTxtFile, targetDatFile,
-                            BufferPool.getPageSize(), numOfAttributes, ts, fieldSeparator);
+                    HeapFileEncoder.convert(sourceTxtFile, targetDatFile, BufferPool.getPageSize(), numOfAttributes,
+                        ts, fieldSeparator);
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -88,7 +88,8 @@ public class SimpleDb {
                     java.lang.reflect.Method m = c.getMethod("main", s);
                     m.invoke(null, (Object) newargs);
                 } catch (ClassNotFoundException cne) {
-                    System.out.println("Class Parser not found -- perhaps you are trying to run the parser as a part of lab1?");
+                    System.out
+                        .println("Class Parser not found -- perhaps you are trying to run the parser as a part of lab1?");
                 } catch (Exception e) {
                     System.out.println("Error in parser.");
                     e.printStackTrace();

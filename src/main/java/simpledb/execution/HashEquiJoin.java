@@ -12,12 +12,12 @@ import java.util.*;
  */
 public class HashEquiJoin extends Operator {
 
-    private static final long serialVersionUID = 1L;
+    private static final long   serialVersionUID = 1L;
     private final JoinPredicate pred;
-    private OpIterator child1, child2;
-    private final TupleDesc comboTD;
-    transient private Tuple t1 = null;
-    transient private Tuple t2 = null;
+    private OpIterator          child1, child2;
+    private final TupleDesc     comboTD;
+    transient private Tuple     t1               = null;
+    transient private Tuple     t2               = null;
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them
@@ -44,19 +44,17 @@ public class HashEquiJoin extends Operator {
     public TupleDesc getTupleDesc() {
         return comboTD;
     }
-    
-    public String getJoinField1Name()
-    {
-	return this.child1.getTupleDesc().getFieldName(this.pred.getField1());
+
+    public String getJoinField1Name() {
+        return this.child1.getTupleDesc().getFieldName(this.pred.getField1());
     }
 
-    public String getJoinField2Name()
-    {
-	return this.child2.getTupleDesc().getFieldName(this.pred.getField2());
+    public String getJoinField2Name() {
+        return this.child2.getTupleDesc().getFieldName(this.pred.getField2());
     }
-    
-    final Map<Object, List<Tuple>> map = new HashMap<>();
-    public final static int MAP_SIZE = 20000;
+
+    final Map<Object, List<Tuple>> map      = new HashMap<>();
+    public final static int        MAP_SIZE = 20000;
 
     private boolean loadMap() throws DbException, TransactionAbortedException {
         int cnt = 0;
@@ -72,8 +70,7 @@ public class HashEquiJoin extends Operator {
 
     }
 
-    public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException {
         child1.open();
         child2.open();
         loadMap();
@@ -84,9 +81,9 @@ public class HashEquiJoin extends Operator {
         super.close();
         child2.close();
         child1.close();
-        this.t1=null;
-        this.t2=null;
-        this.listIt=null;
+        this.t1 = null;
+        this.t2 = null;
+        this.listIt = null;
         this.map.clear();
     }
 
@@ -162,7 +159,7 @@ public class HashEquiJoin extends Operator {
 
     @Override
     public OpIterator[] getChildren() {
-        return new OpIterator[]{this.child1, this.child2};
+        return new OpIterator[] { this.child1, this.child2 };
     }
 
     @Override
@@ -170,5 +167,5 @@ public class HashEquiJoin extends Operator {
         this.child1 = children[0];
         this.child2 = children[1];
     }
-    
+
 }

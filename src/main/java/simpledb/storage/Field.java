@@ -8,7 +8,7 @@ import java.io.*;
 /**
  * Interface for values of fields in tuples in SimpleDB.
  */
-public interface Field extends Serializable{
+public interface Field extends Serializable {
     /**
      * Write the bytes representing this field to the specified
      * DataOutputStream.
@@ -30,13 +30,14 @@ public interface Field extends Serializable{
      * @return type of this field
      */
     Type getType();
-    
+
     /**
      * Hash code.
      * Different Field objects representing the same value should probably
      * return the same hashCode.
      */
     int hashCode();
+
     boolean equals(Object field);
 
     String toString();

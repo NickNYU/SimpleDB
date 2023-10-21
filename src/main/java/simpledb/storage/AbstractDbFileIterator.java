@@ -8,16 +8,17 @@ import java.util.NoSuchElementException;
 /** Helper for implementing DbFileIterators. Handles hasNext()/next() logic. */
 public abstract class AbstractDbFileIterator implements DbFileIterator {
 
-	public boolean hasNext() throws DbException, TransactionAbortedException {
-        if (next == null) next = readNext();
+    public boolean hasNext() throws DbException, TransactionAbortedException {
+        if (next == null)
+            next = readNext();
         return next != null;
     }
 
-    public Tuple next() throws DbException, TransactionAbortedException,
-            NoSuchElementException {
+    public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException {
         if (next == null) {
             next = readNext();
-            if (next == null) throw new NoSuchElementException();
+            if (next == null)
+                throw new NoSuchElementException();
         }
 
         Tuple result = next;

@@ -91,8 +91,7 @@ public class Tuple implements Serializable {
      * @return
      *        An iterator which iterates over all the fields of this tuple
      * */
-    public Iterator<Field> fields()
-    {
+    public Iterator<Field> fields() {
         // some code goes here
         return null;
     }
@@ -100,8 +99,7 @@ public class Tuple implements Serializable {
     /**
      * reset the TupleDesc of this tuple (only affecting the TupleDesc)
      * */
-    public void resetTupleDesc(TupleDesc td)
-    {
+    public void resetTupleDesc(TupleDesc td) {
         // some code goes here
     }
 }

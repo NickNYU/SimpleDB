@@ -10,8 +10,8 @@ public class TransactionId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final AtomicLong counter = new AtomicLong(0);
-    final long myid;
+    static final AtomicLong   counter          = new AtomicLong(0);
+    final long                myid;
 
     public TransactionId() {
         myid = counter.getAndIncrement();
@@ -22,22 +22,22 @@ public class TransactionId implements Serializable {
     }
 
     @Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		TransactionId other = (TransactionId) obj;
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TransactionId other = (TransactionId) obj;
         return myid == other.myid;
     }
 
     @Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (myid ^ (myid >>> 32));
-		return result;
-	}
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (myid ^ (myid >>> 32));
+        return result;
+    }
 }

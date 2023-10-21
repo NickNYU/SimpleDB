@@ -20,12 +20,12 @@ public class TupleDesc implements Serializable {
         /**
          * The type of the field
          * */
-        public final Type fieldType;
-        
+        public final Type         fieldType;
+
         /**
          * The name of the field
          * */
-        public final String fieldName;
+        public final String       fieldName;
 
         public TDItem(Type t, String n) {
             this.fieldName = n;

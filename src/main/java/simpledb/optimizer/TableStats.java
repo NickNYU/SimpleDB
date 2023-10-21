@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class TableStats {
 
-    private static final ConcurrentMap<String, TableStats> statsMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, TableStats> statsMap      = new ConcurrentHashMap<>();
 
-    static final int IOCOSTPERPAGE = 1000;
+    static final int                                       IOCOSTPERPAGE = 1000;
 
     public static TableStats getTableStats(String tablename) {
         return statsMap.get(tablename);
@@ -32,9 +32,8 @@ public class TableStats {
     public static void setTableStats(String tablename, TableStats stats) {
         statsMap.put(tablename, stats);
     }
-    
-    public static void setStatsMap(Map<String,TableStats> s)
-    {
+
+    public static void setStatsMap(Map<String, TableStats> s) {
         try {
             java.lang.reflect.Field statsMapF = TableStats.class.getDeclaredField("statsMap");
             statsMapF.setAccessible(true);
