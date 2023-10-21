@@ -63,8 +63,7 @@ public class Join extends Operator {
         return null;
     }
 
-    public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException {
         // some code goes here
     }
 

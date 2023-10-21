@@ -11,7 +11,7 @@ import java.io.*;
 
 public class Transaction {
     private final TransactionId tid;
-    volatile boolean started = false;
+    volatile boolean            started = false;
 
     public Transaction() {
         tid = new TransactionId();
@@ -48,14 +48,14 @@ public class Transaction {
             //write abort log record and rollback transaction
             if (abort) {
                 Database.getLogFile().logAbort(tid); //does rollback too
-            } 
+            }
 
             // Release locks and flush pages if needed
             Database.getBufferPool().transactionComplete(tid, !abort); // release locks
 
             // write commit log record
             if (!abort) {
-            	Database.getLogFile().logCommit(tid);
+                Database.getLogFile().logCommit(tid);
             }
 
             //setting this here means we could possibly write multiple abort records -- OK?

@@ -1,4 +1,5 @@
 package simpledb.execution;
+
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.common.DbException;
 
@@ -12,12 +13,10 @@ public interface IndexOpIterator extends OpIterator {
         iterates through the tuples that satisfy ipred.
         @param ipred The predicate that is used to scan the index.
     */
-    void open(IndexPredicate ipred)
-        throws NoSuchElementException, DbException, TransactionAbortedException;
+    void open(IndexPredicate ipred) throws NoSuchElementException, DbException, TransactionAbortedException;
 
     /** Begin a new index scan with the specified predicate.
         @param ipred The predicate that is used to scan the index.
     */
-    void rewind(IndexPredicate ipred)
-        throws DbException, TransactionAbortedException;
+    void rewind(IndexPredicate ipred) throws DbException, TransactionAbortedException;
 }

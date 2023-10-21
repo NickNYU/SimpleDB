@@ -1,4 +1,3 @@
-
 package simpledb.storage;
 
 import simpledb.common.DbException;
@@ -45,8 +44,7 @@ public interface DbFile {
      * @throws DbException if the tuple cannot be added
      * @throws IOException if the needed file can't be read/written
      */
-    List<Page> insertTuple(TransactionId tid, Tuple t)
-        throws DbException, IOException, TransactionAbortedException;
+    List<Page> insertTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException;
 
     /**
      * Removes the specified tuple from the file on behalf of the specified
@@ -61,8 +59,7 @@ public interface DbFile {
      * @throws DbException if the tuple cannot be deleted or is not a member
      *   of the file
      */
-    List<Page> deleteTuple(TransactionId tid, Tuple t)
-        throws DbException, IOException, TransactionAbortedException;
+    List<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException;
 
     /**
      * Returns an iterator over all the tuples stored in this DbFile. The
@@ -87,7 +84,7 @@ public interface DbFile {
      * @return an ID uniquely identifying this HeapFile.
      */
     int getId();
-    
+
     /**
      * Returns the TupleDesc of the table stored in this DbFile.
      * @return TupleDesc of this DbFile.

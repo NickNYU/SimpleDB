@@ -1,6 +1,7 @@
 log
 bin/
 out/
+target/
 *.db
 *.iml
 .idea/

@@ -19,14 +19,13 @@ public abstract class Operator implements OpIterator {
     public boolean hasNext() throws DbException, TransactionAbortedException {
         if (!this.open)
             throw new IllegalStateException("Operator not yet open");
-        
+
         if (next == null)
             next = fetchNext();
         return next != null;
     }
 
-    public Tuple next() throws DbException, TransactionAbortedException,
-            NoSuchElementException {
+    public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException {
         if (next == null) {
             next = fetchNext();
             if (next == null)
@@ -46,8 +45,7 @@ public abstract class Operator implements OpIterator {
      * @return the next Tuple in the iterator, or null if the iteration is
      *         finished.
      */
-    protected abstract Tuple fetchNext() throws DbException,
-            TransactionAbortedException;
+    protected abstract Tuple fetchNext() throws DbException, TransactionAbortedException;
 
     /**
      * Closes this iterator. If overridden by a subclass, they should call
@@ -59,9 +57,9 @@ public abstract class Operator implements OpIterator {
         this.open = false;
     }
 
-    private Tuple next = null;
-    private boolean open = false;
-    private int estimatedCardinality = 0;
+    private Tuple   next                 = null;
+    private boolean open                 = false;
+    private int     estimatedCardinality = 0;
 
     public void open() throws DbException, TransactionAbortedException {
         this.open = true;

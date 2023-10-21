@@ -23,7 +23,7 @@ public class IntHistogram {
      * @param max The maximum integer value that will ever be passed to this class for histogramming
      */
     public IntHistogram(int buckets, int min, int max) {
-    	// some code goes here
+        // some code goes here
     }
 
     /**
@@ -31,7 +31,7 @@ public class IntHistogram {
      * @param v Value to add to the histogram
      */
     public void addValue(int v) {
-    	// some code goes here
+        // some code goes here
     }
 
     /**
@@ -46,10 +46,10 @@ public class IntHistogram {
      */
     public double estimateSelectivity(Predicate.Op op, int v) {
 
-    	// some code goes here
+        // some code goes here
         return -1.0;
     }
-    
+
     /**
      * @return
      *     the average selectivity of this histogram.
@@ -58,12 +58,11 @@ public class IntHistogram {
      *     join optimization. It may be needed if you want to
      *     implement a more efficient optimization
      * */
-    public double avgSelectivity()
-    {
+    public double avgSelectivity() {
         // some code goes here
         return 1.0;
     }
-    
+
     /**
      * @return A string describing this histogram, for debugging purposes
      */

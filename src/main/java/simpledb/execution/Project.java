@@ -13,9 +13,9 @@ import java.util.*;
  */
 public class Project extends Operator {
 
-    private static final long serialVersionUID = 1L;
-    private OpIterator child;
-    private final TupleDesc td;
+    private static final long   serialVersionUID = 1L;
+    private OpIterator          child;
+    private final TupleDesc     td;
     private final List<Integer> outFieldIds;
 
     /**
@@ -26,13 +26,11 @@ public class Project extends Operator {
      * @param typesList the types of the fields in the final projection
      * @param child     The child operator
      */
-    public Project(List<Integer> fieldList, List<Type> typesList,
-                   OpIterator child) {
-        this(fieldList, typesList.toArray(new Type[]{}), child);
+    public Project(List<Integer> fieldList, List<Type> typesList, OpIterator child) {
+        this(fieldList, typesList.toArray(new Type[] {}), child);
     }
 
-    public Project(List<Integer> fieldList, Type[] types,
-                   OpIterator child) {
+    public Project(List<Integer> fieldList, Type[] types, OpIterator child) {
         this.child = child;
         outFieldIds = fieldList;
         String[] fieldAr = new String[fieldList.size()];
@@ -48,8 +46,7 @@ public class Project extends Operator {
         return td;
     }
 
-    public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException {
         child.open();
         super.open();
     }
@@ -69,9 +66,9 @@ public class Project extends Operator {
      *
      * @return The next tuple, or null if there are no more tuples
      */
-    protected Tuple fetchNext() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
-        if (!child.hasNext()) return null;
+    protected Tuple fetchNext() throws NoSuchElementException, TransactionAbortedException, DbException {
+        if (!child.hasNext())
+            return null;
         Tuple t = child.next();
         Tuple newTuple = new Tuple(td);
         newTuple.setRecordId(t.getRecordId());
@@ -83,7 +80,7 @@ public class Project extends Operator {
 
     @Override
     public OpIterator[] getChildren() {
-        return new OpIterator[]{this.child};
+        return new OpIterator[] { this.child };
     }
 
     @Override

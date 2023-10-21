@@ -50,8 +50,7 @@ public class IntegerAggregator implements Aggregator {
      */
     public OpIterator iterator() {
         // some code goes here
-        throw new
-        UnsupportedOperationException("please implement me for lab2");
+        throw new UnsupportedOperationException("please implement me for lab2");
     }
 
 }

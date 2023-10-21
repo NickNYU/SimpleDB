@@ -46,7 +46,7 @@ public class Predicate implements Serializable {
         }
 
     }
-    
+
     /**
      * Constructor.
      * 
@@ -64,8 +64,7 @@ public class Predicate implements Serializable {
     /**
      * @return the field number
      */
-    public int getField()
-    {
+    public int getField() {
         // some code goes here
         return -1;
     }
@@ -73,21 +72,19 @@ public class Predicate implements Serializable {
     /**
      * @return the operator
      */
-    public Op getOp()
-    {
+    public Op getOp() {
         // some code goes here
         return null;
     }
-    
+
     /**
      * @return the operand
      */
-    public Field getOperand()
-    {
+    public Field getOperand() {
         // some code goes here
         return null;
     }
-    
+
     /**
      * Compares the field number of t specified in the constructor to the
      * operand field specified in the constructor using the operator specific in

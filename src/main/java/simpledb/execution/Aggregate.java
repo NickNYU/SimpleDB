@@ -7,7 +7,6 @@ import simpledb.transaction.TransactionAbortedException;
 
 import java.util.NoSuchElementException;
 
-
 /**
  * The Aggregation operator that computes an aggregate (e.g., sum, avg, max,
  * min). Note that we only support aggregates over a single column, grouped by a
@@ -83,8 +82,7 @@ public class Aggregate extends Operator {
         return aop.toString();
     }
 
-    public void open() throws NoSuchElementException, DbException,
-            TransactionAbortedException {
+    public void open() throws NoSuchElementException, DbException, TransactionAbortedException {
         // some code goes here
     }
 

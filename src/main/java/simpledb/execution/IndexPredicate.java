@@ -9,11 +9,11 @@ import java.io.Serializable;
  * @see IndexOpIterator
  */
 public class IndexPredicate implements Serializable {
-	
-    private static final long serialVersionUID = 1L;
-	
+
+    private static final long  serialVersionUID = 1L;
+
     private final Predicate.Op op;
-    private final Field fieldvalue;
+    private final Field        fieldvalue;
 
     /**
      * Constructor.

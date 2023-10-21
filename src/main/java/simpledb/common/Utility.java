@@ -86,7 +86,7 @@ public class Utility {
      *         sort of file it belongs to.
      */
     public static Tuple getTuple(int[] tupledata, int width) {
-        if(tupledata.length != width) {
+        if (tupledata.length != width) {
             System.out.println("get Hash Tuple has the wrong length~");
             System.exit(1);
         }
@@ -102,8 +102,7 @@ public class Utility {
      * will be overwritten. The new table will be added to the Catalog with
      * the specified number of columns as IntFields.
      */
-    public static HeapFile createEmptyHeapFile(String path, int cols)
-        throws IOException {
+    public static HeapFile createEmptyHeapFile(String path, int cols) throws IOException {
         File f = new File(path);
         // touch the file
         FileOutputStream fos = new FileOutputStream(f);
@@ -133,7 +132,7 @@ public class Utility {
      */
     public static HeapFile openHeapFile(int cols, File f) {
         // create the HeapFile and add it to the catalog
-    	TupleDesc td = getTupleDesc(cols);
+        TupleDesc td = getTupleDesc(cols);
         HeapFile hf = new HeapFile(f, td);
         Database.getCatalog().addTable(hf, UUID.randomUUID().toString());
         return hf;
@@ -145,20 +144,20 @@ public class Utility {
         Database.getCatalog().addTable(hf, UUID.randomUUID().toString());
         return hf;
     }
-    
+
     public static HeapFile openHeapFile(int cols, String colPrefix, File f) {
         // create the HeapFile and add it to the catalog
-    	TupleDesc td = getTupleDesc(cols, colPrefix);
-    	return openHeapFile(cols, colPrefix, f, td);
+        TupleDesc td = getTupleDesc(cols, colPrefix);
+        return openHeapFile(cols, colPrefix, f, td);
     }
 
     public static String listToString(List<Integer> list) {
         StringBuilder out = new StringBuilder();
         for (Integer i : list) {
-            if (out.length() > 0) out.append("\t");
+            if (out.length() > 0)
+                out.append("\t");
             out.append(i);
         }
         return out.toString();
     }
 }
-

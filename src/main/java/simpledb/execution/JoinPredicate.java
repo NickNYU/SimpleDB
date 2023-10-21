@@ -41,21 +41,18 @@ public class JoinPredicate implements Serializable {
         // some code goes here
         return false;
     }
-    
-    public int getField1()
-    {
+
+    public int getField1() {
         // some code goes here
         return -1;
     }
-    
-    public int getField2()
-    {
+
+    public int getField2() {
         // some code goes here
         return -1;
     }
-    
-    public Predicate.Op getOperator()
-    {
+
+    public Predicate.Op getOperator() {
         // some code goes here
         return null;
     }

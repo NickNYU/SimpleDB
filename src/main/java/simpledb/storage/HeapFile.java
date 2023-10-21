@@ -88,16 +88,15 @@ public class HeapFile implements DbFile {
     }
 
     // see DbFile.java for javadocs
-    public List<Page> insertTuple(TransactionId tid, Tuple t)
-            throws DbException, IOException, TransactionAbortedException {
+    public List<Page> insertTuple(TransactionId tid, Tuple t) throws DbException, IOException,
+                                                             TransactionAbortedException {
         // some code goes here
         return null;
         // not necessary for lab1
     }
 
     // see DbFile.java for javadocs
-    public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException,
-            TransactionAbortedException {
+    public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException, TransactionAbortedException {
         // some code goes here
         return null;
         // not necessary for lab1
@@ -110,4 +109,3 @@ public class HeapFile implements DbFile {
     }
 
 }
-

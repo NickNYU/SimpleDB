@@ -9,12 +9,12 @@ import java.util.*;
  */
 public class TupleIterator implements OpIterator {
     /**
-	 * 
-	 */
+     * 
+     */
     private static final long serialVersionUID = 1L;
-    Iterator<Tuple> i = null;
-    TupleDesc td = null;
-    Iterable<Tuple> tuples = null;
+    Iterator<Tuple>           i                = null;
+    TupleDesc                 td               = null;
+    Iterable<Tuple>           tuples           = null;
 
     /**
      * Constructs an iterator from the specified Iterable, and the specified
@@ -30,8 +30,7 @@ public class TupleIterator implements OpIterator {
         // check that all tuples are the right TupleDesc
         for (Tuple t : tuples) {
             if (!t.getTupleDesc().equals(td))
-                throw new IllegalArgumentException(
-                        "incompatible tuple in tuple set");
+                throw new IllegalArgumentException("incompatible tuple in tuple set");
         }
     }
 

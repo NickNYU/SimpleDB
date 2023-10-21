@@ -37,8 +37,7 @@ public class Filter extends Operator {
         return null;
     }
 
-    public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+    public void open() throws DbException, NoSuchElementException, TransactionAbortedException {
         // some code goes here
     }
 
@@ -59,8 +58,7 @@ public class Filter extends Operator {
      *         more tuples
      * @see Predicate#filter
      */
-    protected Tuple fetchNext() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
+    protected Tuple fetchNext() throws NoSuchElementException, TransactionAbortedException, DbException {
         // some code goes here
         return null;
     }
