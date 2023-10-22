@@ -1,7 +1,7 @@
 package simpledb.execution;
 
 import simpledb.transaction.TransactionAbortedException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.DbException;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
@@ -26,11 +26,11 @@ public class Project extends Operator {
      * @param typesList the types of the fields in the final projection
      * @param child     The child operator
      */
-    public Project(List<Integer> fieldList, List<Type> typesList, OpIterator child) {
-        this(fieldList, typesList.toArray(new Type[] {}), child);
+    public Project(List<Integer> fieldList, List<FieldType> typesList, OpIterator child) {
+        this(fieldList, typesList.toArray(new FieldType[] {}), child);
     }
 
-    public Project(List<Integer> fieldList, Type[] types, OpIterator child) {
+    public Project(List<Integer> fieldList, FieldType[] types, OpIterator child) {
         this.child = child;
         outFieldIds = fieldList;
         String[] fieldAr = new String[fieldList.size()];

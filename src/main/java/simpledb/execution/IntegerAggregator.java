@@ -1,6 +1,6 @@
 package simpledb.execution;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.storage.Tuple;
 
 /**
@@ -25,7 +25,7 @@ public class IntegerAggregator implements Aggregator {
      *            the aggregation operator
      */
 
-    public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
+    public IntegerAggregator(int gbfield, FieldType gbfieldtype, int afield, Op what) {
         // some code goes here
     }
 

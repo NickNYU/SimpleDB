@@ -8,7 +8,7 @@ import junit.framework.JUnit4TestAdapter;
 import org.junit.Before;
 import org.junit.Test;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 import simpledb.execution.Aggregate;
 import simpledb.execution.Aggregator;
@@ -103,7 +103,7 @@ public class AggregateTest extends SimpleDbTestBase {
     // We group by the String field, returning <String, Count> tuples.
     op = new Aggregate(scan2, 0, 1,
             Aggregator.Op.COUNT);
-    expected = new TupleDesc(new Type[]{ Type.STRING_TYPE, Type.INT_TYPE });
+    expected = new TupleDesc(new FieldType[]{ FieldType.STRING_TYPE, FieldType.INT_TYPE });
     actual = op.getTupleDesc();
     assertEquals(expected, actual);
   }

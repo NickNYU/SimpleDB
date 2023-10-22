@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import simpledb.execution.*;
 import simpledb.storage.TupleDesc;
-import simpledb.storage.TupleDesc.TDItem;
+import simpledb.storage.TupleDesc.ColumnMeta;
 
 public class QueryPlanVisualizer {
 
@@ -210,7 +210,7 @@ public class QueryPlanVisualizer {
             } else if (plan instanceof Project) {
                 Project p = (Project) plan;
                 StringBuilder fields = new StringBuilder();
-                Iterator<TDItem> it = p.getTupleDesc().iterator();
+                Iterator<ColumnMeta> it = p.getTupleDesc().iterator();
                 while (it.hasNext())
                     fields.append(it.next().fieldName).append(",");
                 fields = new StringBuilder(fields.substring(0, fields.length() - 1));

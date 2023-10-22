@@ -19,7 +19,7 @@ import simpledb.transaction.TransactionId;
 
 public class SystemTestUtil {
     public static final TupleDesc SINGLE_INT_DESCRIPTOR =
-            new TupleDesc(new Type[]{Type.INT_TYPE});
+            new TupleDesc(new FieldType[]{FieldType.INT_TYPE});
 
     private static final int MAX_RAND_VALUE = 1 << 16;
 

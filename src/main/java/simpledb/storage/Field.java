@@ -1,7 +1,7 @@
 package simpledb.storage;
 
 import simpledb.execution.Predicate;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 
 import java.io.*;
 
@@ -26,10 +26,10 @@ public interface Field extends Serializable {
     boolean compare(Predicate.Op op, Field value);
 
     /**
-     * Returns the type of this field (see {@link Type#INT_TYPE} or {@link Type#STRING_TYPE}
+     * Returns the type of this field (see {@link FieldType#INT_TYPE} or {@link FieldType#STRING_TYPE}
      * @return type of this field
      */
-    Type getType();
+    FieldType getType();
 
     /**
      * Hash code.

@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import simpledb.common.Database;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 import simpledb.execution.Predicate.Op;
 import simpledb.common.DbException;
@@ -153,7 +153,7 @@ public class BTreeFileEncoder {
      * @return the BTreeFile
      */
     public static BTreeFile convert(List<List<Integer>> tuples, File hFile, File bFile, int npagebytes, int numFields,
-                                    Type[] typeAr, char fieldSeparator, int keyField) throws IOException, DbException,
+                                    FieldType[] typeAr, char fieldSeparator, int keyField) throws IOException, DbException,
                                                                                      TransactionAbortedException {
         File tempInput = File.createTempFile("tempTable", ".txt");
         tempInput.deleteOnExit();
@@ -194,7 +194,7 @@ public class BTreeFileEncoder {
      * @throws DbException
      * @throws TransactionAbortedException
      */
-    public static BTreeFile convert(File inFile, File hFile, File bFile, int npagebytes, int numFields, Type[] typeAr,
+    public static BTreeFile convert(File inFile, File hFile, File bFile, int npagebytes, int numFields, FieldType[] typeAr,
                                     char fieldSeparator, int keyField) throws IOException, DbException,
                                                                       TransactionAbortedException {
         // convert the inFile to HeapFile first.
@@ -215,7 +215,7 @@ public class BTreeFileEncoder {
 
         // add the tuples to B+ tree file
         BTreeFile bf = BTreeUtility.openBTreeFile(numFields, bFile, keyField);
-        Type keyType = typeAr[keyField];
+        FieldType keyType = typeAr[keyField];
         int tableid = bf.getId();
 
         int nrecbytes = 0;
@@ -391,7 +391,7 @@ public class BTreeFileEncoder {
      * @throws IOException
      */
     private static void cleanUpEntries(List<List<BTreeEntry>> entries, BTreeFile bf, int nentries, int npagebytes,
-                                       Type keyType, int tableid, int keyField) throws IOException {
+                                       FieldType keyType, int tableid, int keyField) throws IOException {
         // As with the leaf pages, there are two options:
         // 1. We have less than or equal to a full page of entries. Because of the way the code
         //    was written, we know this must be the root page
@@ -445,7 +445,7 @@ public class BTreeFileEncoder {
      * @throws IOException
      */
     private static void updateEntries(List<List<BTreeEntry>> entries, BTreeFile bf, BTreeEntry e, int level,
-                                      int nentries, int npagebytes, Type keyType, int tableid, int keyField)
+                                      int nentries, int npagebytes, FieldType keyType, int tableid, int keyField)
                                                                                                             throws IOException {
         while (entries.size() <= level) {
             entries.add(new ArrayList<>());
@@ -486,7 +486,7 @@ public class BTreeFileEncoder {
      * @return a byte array which can be passed to the BTreeLeafPage constructor
      * @throws IOException
      */
-    public static byte[] convertToLeafPage(List<Tuple> tuples, int npagebytes, int numFields, Type[] typeAr,
+    public static byte[] convertToLeafPage(List<Tuple> tuples, int npagebytes, int numFields, FieldType[] typeAr,
                                            int keyField) throws IOException {
         int nrecbytes = 0;
         for (int i = 0; i < numFields; i++) {
@@ -601,7 +601,7 @@ public class BTreeFileEncoder {
      * @return a byte array which can be passed to the BTreeInternalPage constructor
      * @throws IOException
      */
-    public static byte[] convertToInternalPage(List<BTreeEntry> entries, int npagebytes, Type keyType,
+    public static byte[] convertToInternalPage(List<BTreeEntry> entries, int npagebytes, FieldType keyType,
                                                int childPageCategory) throws IOException {
         int nentrybytes = keyType.getLen() + BTreeInternalPage.INDEX_SIZE;
         // pointerbytes: one extra child pointer, parent pointer, child page category

@@ -1,6 +1,6 @@
 package simpledb.storage;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 
 import java.io.*;
@@ -57,12 +57,12 @@ public class HeapFileEncoder {
     }
 
     public static void convert(File inFile, File outFile, int npagebytes, int numFields) throws IOException {
-        Type[] ts = new Type[numFields];
-        Arrays.fill(ts, Type.INT_TYPE);
+        FieldType[] ts = new FieldType[numFields];
+        Arrays.fill(ts, FieldType.INT_TYPE);
         convert(inFile, outFile, npagebytes, numFields, ts);
     }
 
-    public static void convert(File inFile, File outFile, int npagebytes, int numFields, Type[] typeAr)
+    public static void convert(File inFile, File outFile, int npagebytes, int numFields, FieldType[] typeAr)
                                                                                                        throws IOException {
         convert(inFile, outFile, npagebytes, numFields, typeAr, ',');
     }
@@ -88,7 +88,7 @@ public class HeapFileEncoder {
      * @throws IOException if the input/output file can't be opened or a
      *   malformed input line is encountered
      */
-    public static void convert(File inFile, File outFile, int npagebytes, int numFields, Type[] typeAr,
+    public static void convert(File inFile, File outFile, int npagebytes, int numFields, FieldType[] typeAr,
                                char fieldSeparator) throws IOException {
 
         int nrecbytes = 0;
@@ -138,17 +138,17 @@ public class HeapFileEncoder {
                 first = false;
             if (c == fieldSeparator || c == '\n' || c == '\r') {
                 String s = new String(buf, 0, curpos);
-                if (typeAr[fieldNo] == Type.INT_TYPE) {
+                if (typeAr[fieldNo] == FieldType.INT_TYPE) {
                     try {
                         pageStream.writeInt(Integer.parseInt(s.trim()));
                     } catch (NumberFormatException e) {
                         System.out.println("BAD LINE : " + s);
                     }
-                } else if (typeAr[fieldNo] == Type.STRING_TYPE) {
+                } else if (typeAr[fieldNo] == FieldType.STRING_TYPE) {
                     s = s.trim();
-                    int overflow = Type.STRING_LEN - s.length();
+                    int overflow = FieldType.STRING_LEN - s.length();
                     if (overflow < 0) {
-                        s = s.substring(0, Type.STRING_LEN);
+                        s = s.substring(0, FieldType.STRING_LEN);
                     }
                     pageStream.writeInt(s.length());
                     pageStream.writeBytes(s);

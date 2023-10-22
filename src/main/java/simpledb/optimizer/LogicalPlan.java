@@ -3,7 +3,7 @@ package simpledb.optimizer;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.ParsingException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.execution.*;
 import simpledb.storage.*;
 import simpledb.transaction.TransactionId;
@@ -325,7 +325,7 @@ public class LogicalPlan {
             }
 
             Field f;
-            Type ftyp;
+            FieldType ftyp;
             TupleDesc td = subplanMap.get(lf.tableAlias).getTupleDesc();
 
             try {//td.fieldNameToIndex(disambiguateName(lf.fieldPureName))
@@ -333,10 +333,10 @@ public class LogicalPlan {
             } catch (NoSuchElementException e) {
                 throw new ParsingException("Unknown field in filter expression " + lf.fieldQuantifiedName);
             }
-            if (ftyp == Type.INT_TYPE)
+            if (ftyp == FieldType.INT_TYPE)
                 f = new IntField(new Integer(lf.c));
             else
-                f = new StringField(lf.c, Type.STRING_LEN);
+                f = new StringField(lf.c, FieldType.STRING_LEN);
 
             Predicate p = null;
             try {
@@ -419,7 +419,7 @@ public class LogicalPlan {
 
         //walk the select list, to determine order in which to project output fields
         List<Integer> outFields = new ArrayList<>();
-        List<Type> outTypes = new ArrayList<>();
+        List<FieldType> outTypes = new ArrayList<>();
         for (int i = 0; i < selectList.size(); i++) {
             LogicalSelectListNode si = selectList.get(i);
             if (si.aggOp != null) {
@@ -432,7 +432,7 @@ public class LogicalPlan {
                 } catch (NoSuchElementException e) {
                     throw new ParsingException("Unknown field " + si.fname + " in SELECT list");
                 }
-                outTypes.add(Type.INT_TYPE); //the type of all aggregate functions is INT
+                outTypes.add(FieldType.INT_TYPE); //the type of all aggregate functions is INT
 
             } else if (hasAgg) {
                 if (groupByField == null) {
@@ -488,7 +488,7 @@ public class LogicalPlan {
 
     public static void main(String[] argv) {
         // construct a 3-column table schema
-        Type[] types = new Type[] { Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE };
+        FieldType[] types = new FieldType[] { FieldType.INT_TYPE, FieldType.INT_TYPE, FieldType.INT_TYPE };
         String[] names = new String[] { "field0", "field1", "field2" };
 
         TupleDesc td = new TupleDesc(types, names);

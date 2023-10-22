@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 import simpledb.common.Database;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 import simpledb.execution.IndexPredicate;
 import simpledb.execution.Predicate.Op;
@@ -156,8 +156,8 @@ public class BTreeUtility {
         File bFile = File.createTempFile("table_index", ".dat");
         bFile.deleteOnExit();
 
-        Type[] typeAr = new Type[columns];
-        Arrays.fill(typeAr, Type.INT_TYPE);
+        FieldType[] typeAr = new FieldType[columns];
+        Arrays.fill(typeAr, FieldType.INT_TYPE);
         return BTreeFileEncoder.convert(tuples, hFile, bFile, BufferPool.getPageSize(), columns, typeAr, ',', keyField);
     }
 
@@ -279,7 +279,7 @@ public class BTreeUtility {
      * @return the number of tuples per page
      */
     public static int getNumTuplesPerPage(int columns) {
-        int bytesPerTuple = Type.INT_TYPE.getLen() * columns * 8;
+        int bytesPerTuple = FieldType.INT_TYPE.getLen() * columns * 8;
         return (BufferPool.getPageSize() * 8 - 3 * BTreeLeafPage.INDEX_SIZE * 8) / (bytesPerTuple + 1);
     }
 
@@ -312,8 +312,8 @@ public class BTreeUtility {
      */
     public static BTreeLeafPage createRandomLeafPage(BTreePageId pid, int columns, int keyField, int numTuples,
                                                      int min, int max) throws IOException {
-        Type[] typeAr = new Type[columns];
-        Arrays.fill(typeAr, Type.INT_TYPE);
+        FieldType[] typeAr = new FieldType[columns];
+        Arrays.fill(typeAr, FieldType.INT_TYPE);
         byte[] data = BTreeFileEncoder.convertToLeafPage(
             BTreeUtility.generateRandomTuples(columns, numTuples, min, max), BufferPool.getPageSize(), columns, typeAr,
             keyField);
@@ -325,7 +325,7 @@ public class BTreeUtility {
      * @return the number of entries per page
      */
     public static int getNumEntriesPerPage() {
-        int nentrybytes = Type.INT_TYPE.getLen() + BTreeInternalPage.INDEX_SIZE;
+        int nentrybytes = FieldType.INT_TYPE.getLen() + BTreeInternalPage.INDEX_SIZE;
         // pointerbytes: one extra child pointer, parent pointer, child page category
         int internalpointerbytes = 2 * BTreeLeafPage.INDEX_SIZE + 1;
         return (BufferPool.getPageSize() * 8 - internalpointerbytes * 8 - 1) / (nentrybytes * 8 + 1);
@@ -365,7 +365,7 @@ public class BTreeUtility {
                                                              int numKeys, int minKey, int maxKey, int minChildPtr)
                                                                                                                   throws IOException {
         byte[] data = BTreeFileEncoder.convertToInternalPage(BTreeUtility.generateRandomEntries(numKeys,
-            pid.getTableId(), childPageCategory, minKey, maxKey, minChildPtr), BufferPool.getPageSize(), Type.INT_TYPE,
+            pid.getTableId(), childPageCategory, minKey, maxKey, minChildPtr), BufferPool.getPageSize(), FieldType.INT_TYPE,
             childPageCategory);
         return new BTreeInternalPage(pid, data, keyField);
     }
@@ -414,8 +414,8 @@ public class BTreeUtility {
         File bFile = File.createTempFile("table_index", ".dat");
         bFile.deleteOnExit();
 
-        Type[] typeAr = new Type[columns];
-        Arrays.fill(typeAr, Type.INT_TYPE);
+        FieldType[] typeAr = new FieldType[columns];
+        Arrays.fill(typeAr, FieldType.INT_TYPE);
         return BTreeFileEncoder.convert(tuples, hFile, bFile, BufferPool.getPageSize(), columns, typeAr, ',', keyField);
     }
 

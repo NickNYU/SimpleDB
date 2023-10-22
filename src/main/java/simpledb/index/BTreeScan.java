@@ -2,7 +2,7 @@ package simpledb.index;
 
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.execution.IndexPredicate;
 import simpledb.execution.OpIterator;
 import simpledb.storage.DbFileIterator;
@@ -93,10 +93,10 @@ public class BTreeScan implements OpIterator {
         }
         myTd = Database.getCatalog().getTupleDesc(tableid);
         String[] newNames = new String[myTd.numFields()];
-        Type[] newTypes = new Type[myTd.numFields()];
+        FieldType[] newTypes = new FieldType[myTd.numFields()];
         for (int i = 0; i < myTd.numFields(); i++) {
             String name = myTd.getFieldName(i);
-            Type t = myTd.getFieldType(i);
+            FieldType t = myTd.getFieldType(i);
 
             newNames[i] = tableAlias + "." + name;
             newTypes[i] = t;

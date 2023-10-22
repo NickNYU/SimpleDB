@@ -4,7 +4,7 @@ import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Debug;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.execution.Predicate;
 import simpledb.storage.*;
 
@@ -72,21 +72,21 @@ public class BTreeLeafPage extends BTreePage {
 
         // Read the parent and sibling pointers
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.parent = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();
         }
 
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.leftSibling = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();
         }
 
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.rightSibling = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();

@@ -6,7 +6,7 @@ import simpledb.index.BTreeFileEncoder.EntryComparator;
 import simpledb.index.BTreeFileEncoder.ReverseEntryComparator;
 import simpledb.TestUtil.SkeletonFile;
 import simpledb.common.DbException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 import simpledb.storage.BufferPool;
 import simpledb.storage.IntField;
@@ -68,7 +68,7 @@ public class BTreeInternalPageTest extends SimpleDbTestBase {
 		// Convert it to a BTreeInternalPage
 		try {
 			EXAMPLE_DATA = BTreeFileEncoder.convertToInternalPage(entries,
-					BufferPool.getPageSize(), Type.INT_TYPE, BTreePageId.LEAF);
+					BufferPool.getPageSize(), FieldType.INT_TYPE, BTreePageId.LEAF);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
