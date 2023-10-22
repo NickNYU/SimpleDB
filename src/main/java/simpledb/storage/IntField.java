@@ -1,7 +1,7 @@
 package simpledb.storage;
 
 import simpledb.execution.Predicate;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 
 import java.io.*;
 
@@ -80,7 +80,7 @@ public class IntField implements Field {
      *
      * @return Type.INT_TYPE
      */
-    public Type getType() {
-        return Type.INT_TYPE;
+    public FieldType getType() {
+        return FieldType.INT_TYPE;
     }
 }

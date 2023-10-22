@@ -12,7 +12,7 @@ import java.io.*;
  * Types are static objects defined by this class; hence, the Type
  * constructor is private.
  */
-public enum Type implements Serializable {
+public enum FieldType implements Serializable {
     INT_TYPE() {
         @Override
         public int getLen() {

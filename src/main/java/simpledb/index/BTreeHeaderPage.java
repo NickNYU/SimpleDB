@@ -2,7 +2,7 @@ package simpledb.index;
 
 import simpledb.common.DbException;
 import simpledb.common.Debug;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.storage.BufferPool;
 import simpledb.storage.Field;
 import simpledb.storage.IntField;
@@ -24,7 +24,7 @@ public class BTreeHeaderPage implements Page {
     private volatile boolean       dirty       = false;
     private volatile TransactionId dirtier     = null;
 
-    final static int               INDEX_SIZE  = Type.INT_TYPE.getLen();
+    final static int               INDEX_SIZE  = FieldType.INT_TYPE.getLen();
 
     final BTreePageId              pid;
     final byte[]                   header;
@@ -51,14 +51,14 @@ public class BTreeHeaderPage implements Page {
 
         // Read the next and prev pointers
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.nextPage = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();
         }
 
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.prevPage = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();

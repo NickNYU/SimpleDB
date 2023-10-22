@@ -5,7 +5,7 @@ import java.io.*;
 
 import simpledb.common.Catalog;
 import simpledb.common.Database;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.execution.Predicate.Op;
 import simpledb.common.DbException;
 import simpledb.common.Debug;
@@ -77,7 +77,7 @@ public class BTreeInternalPage extends BTreePage {
 
         // Read the parent pointer
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             this.parent = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();
@@ -213,7 +213,7 @@ public class BTreeInternalPage extends BTreePage {
         // read child pointer
         int child = -1;
         try {
-            Field f = Type.INT_TYPE.parse(dis);
+            Field f = FieldType.INT_TYPE.parse(dis);
             child = ((IntField) f).getValue();
         } catch (java.text.ParseException e) {
             e.printStackTrace();

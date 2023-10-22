@@ -11,10 +11,10 @@ public class Utility {
     /**
      * @return a Type array of length len populated with Type.INT_TYPE
      */
-    public static Type[] getTypes(int len) {
-        Type[] types = new Type[len];
+    public static FieldType[] getTypes(int len) {
+        FieldType[] types = new FieldType[len];
         for (int i = 0; i < len; ++i)
-            types[i] = Type.INT_TYPE;
+            types[i] = FieldType.INT_TYPE;
         return types;
     }
 

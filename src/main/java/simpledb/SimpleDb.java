@@ -1,7 +1,7 @@
 package simpledb;
 
 import simpledb.common.DbException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.common.Utility;
 import simpledb.storage.*;
 import simpledb.transaction.TransactionAbortedException;
@@ -22,12 +22,12 @@ public class SimpleDb {
                     File sourceTxtFile = new File(args[1]);
                     File targetDatFile = new File(args[1].replaceAll(".txt", ".dat"));
                     int numOfAttributes = Integer.parseInt(args[2]);
-                    Type[] ts = new Type[numOfAttributes];
+                    FieldType[] ts = new FieldType[numOfAttributes];
                     char fieldSeparator = ',';
 
                     if (args.length == 3)
                         for (int i = 0; i < numOfAttributes; i++)
-                            ts[i] = Type.INT_TYPE;
+                            ts[i] = FieldType.INT_TYPE;
                     else {
                         String typeString = args[3];
                         String[] typeStringAr = typeString.split(",");
@@ -38,9 +38,9 @@ public class SimpleDb {
                         int index = 0;
                         for (String s : typeStringAr) {
                             if (s.equalsIgnoreCase("int"))
-                                ts[index++] = Type.INT_TYPE;
+                                ts[index++] = FieldType.INT_TYPE;
                             else if (s.equalsIgnoreCase("string"))
-                                ts[index++] = Type.STRING_TYPE;
+                                ts[index++] = FieldType.STRING_TYPE;
                             else {
                                 System.err.println("Unknown type " + s);
                                 return;

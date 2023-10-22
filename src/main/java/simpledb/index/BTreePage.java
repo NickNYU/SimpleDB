@@ -3,7 +3,7 @@ package simpledb.index;
 import simpledb.common.Catalog;
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.storage.BufferPool;
 import simpledb.storage.Page;
 import simpledb.storage.TupleDesc;
@@ -21,7 +21,7 @@ public abstract class BTreePage implements Page {
     protected volatile boolean       dirty       = false;
     protected volatile TransactionId dirtier     = null;
 
-    protected final static int       INDEX_SIZE  = Type.INT_TYPE.getLen();
+    protected final static int       INDEX_SIZE  = FieldType.INT_TYPE.getLen();
 
     protected final BTreePageId      pid;
     protected final TupleDesc        td;

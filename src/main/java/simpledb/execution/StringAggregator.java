@@ -1,6 +1,6 @@
 package simpledb.execution;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.storage.Tuple;
 
 /**
@@ -19,7 +19,7 @@ public class StringAggregator implements Aggregator {
      * @throws IllegalArgumentException if what != COUNT
      */
 
-    public StringAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
+    public StringAggregator(int gbfield, FieldType gbfieldtype, int afield, Op what) {
         // some code goes here
     }
 

@@ -1,6 +1,6 @@
 package simpledb.storage;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 import simpledb.execution.Predicate;
 
 import java.io.*;
@@ -112,8 +112,8 @@ public class StringField implements Field {
     /**
      * @return the Type for this Field
      */
-    public Type getType() {
+    public FieldType getType() {
 
-        return Type.STRING_TYPE;
+        return FieldType.STRING_TYPE;
     }
 }

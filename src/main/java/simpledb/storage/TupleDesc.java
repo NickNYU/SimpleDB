@@ -1,6 +1,6 @@
 package simpledb.storage;
 
-import simpledb.common.Type;
+import simpledb.common.FieldType;
 
 import java.io.Serializable;
 import java.util.*;
@@ -10,41 +10,16 @@ import java.util.*;
  */
 public class TupleDesc implements Serializable {
 
-    /**
-     * A help class to facilitate organizing the information of each field
-     * */
-    public static class TDItem implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * The type of the field
-         * */
-        public final Type         fieldType;
-
-        /**
-         * The name of the field
-         * */
-        public final String       fieldName;
-
-        public TDItem(Type t, String n) {
-            this.fieldName = n;
-            this.fieldType = t;
-        }
-
-        public String toString() {
-            return fieldName + "(" + fieldType + ")";
-        }
-    }
-
+    private static final String ANONYMOUS_FIELD_NAME = "anonymous";
+    private List<ColumnMeta> columnMetas = new ArrayList<>();
     /**
      * @return
      *        An iterator which iterates over all the field TDItems
      *        that are included in this TupleDesc
      * */
-    public Iterator<TDItem> iterator() {
+    public Iterator<ColumnMeta> iterator() {
         // some code goes here
-        return null;
+        return columnMetas.iterator();
     }
 
     private static final long serialVersionUID = 1L;
@@ -60,8 +35,11 @@ public class TupleDesc implements Serializable {
      *            array specifying the names of the fields. Note that names may
      *            be null.
      */
-    public TupleDesc(Type[] typeAr, String[] fieldAr) {
+    public TupleDesc(FieldType[] typeAr, String[] fieldAr) {
         // some code goes here
+        for (int i = 0; i < typeAr.length; i++) {
+            columnMetas.add(new ColumnMeta(typeAr[i], fieldAr[i]));
+        }
     }
 
     /**
@@ -72,16 +50,18 @@ public class TupleDesc implements Serializable {
      *            array specifying the number of and types of fields in this
      *            TupleDesc. It must contain at least one entry.
      */
-    public TupleDesc(Type[] typeAr) {
+    public TupleDesc(FieldType[] typeAr) {
         // some code goes here
+        for (FieldType fieldType : typeAr) {
+            columnMetas.add(new ColumnMeta(fieldType, ANONYMOUS_FIELD_NAME));
+        }
     }
 
     /**
      * @return the number of fields in this TupleDesc
      */
     public int numFields() {
-        // some code goes here
-        return 0;
+        return columnMetas.size();
     }
 
     /**
@@ -94,8 +74,7 @@ public class TupleDesc implements Serializable {
      *             if i is not a valid field reference.
      */
     public String getFieldName(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+        return columnMetas.get(i).fieldName;
     }
 
     /**
@@ -108,9 +87,8 @@ public class TupleDesc implements Serializable {
      * @throws NoSuchElementException
      *             if i is not a valid field reference.
      */
-    public Type getFieldType(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public FieldType getFieldType(int i) throws NoSuchElementException {
+        return columnMetas.get(i).fieldType;
     }
 
     /**
@@ -123,8 +101,12 @@ public class TupleDesc implements Serializable {
      *             if no field with a matching name is found.
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+        for (int i = 0; i < columnMetas.size(); i++) {
+            if (columnMetas.get(i).fieldName.equals(name)) {
+                return i;
+            }
+        }
+        throw new NoSuchElementException("no column with name: " + name);
     }
 
     /**
@@ -132,8 +114,11 @@ public class TupleDesc implements Serializable {
      *         Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {
-        // some code goes here
-        return 0;
+        int size = 0;
+        for (ColumnMeta meta : columnMetas) {
+            size += meta.fieldType.getLen();
+        }
+        return size;
     }
 
     /**
@@ -147,30 +132,44 @@ public class TupleDesc implements Serializable {
      * @return the new TupleDesc
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
-        // some code goes here
-        return null;
+        int totalSize = td1.numFields() + td2.numFields();
+        FieldType[] fieldTypes = new FieldType[totalSize];
+        String[] fieldNames = new String[totalSize];
+        int index = 0;
+        index = td1.renderMergeArray(fieldTypes, fieldNames, index);
+        td2.renderMergeArray(fieldTypes, fieldNames, index);
+        return new TupleDesc(fieldTypes, fieldNames);
     }
 
-    /**
-     * Compares the specified object with this TupleDesc for equality. Two
-     * TupleDescs are considered equal if they have the same number of items
-     * and if the i-th type in this TupleDesc is equal to the i-th type in o
-     * for every i.
-     * 
-     * @param o
-     *            the Object to be compared for equality with this TupleDesc.
-     * @return true if the object is equal to this TupleDesc.
-     */
+    private int renderMergeArray(FieldType[] fieldTypes, String[] fieldNames, int beginIndex) {
+        int index = beginIndex;
+        for (ColumnMeta meta : columnMetas) {
+            fieldTypes[index] = meta.fieldType;
+            fieldNames[index] = meta.fieldName;
+            index ++;
+        }
+        return index;
+    }
 
+    @Override
     public boolean equals(Object o) {
-        // some code goes here
-        return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TupleDesc tupleDesc = (TupleDesc) o;
+        if (tupleDesc.columnMetas.size() != columnMetas.size()) {
+            return false;
+        }
+        for (int i = 0; i < columnMetas.size(); i++) {
+            if (!Objects.equals(columnMetas.get(i), tupleDesc.columnMetas.get(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    @Override
     public int hashCode() {
-        // If you want to use TupleDesc as keys for HashMap, implement this so
-        // that equal objects have equals hashCode() results
-        throw new UnsupportedOperationException("unimplemented");
+        return Objects.hash(columnMetas);
     }
 
     /**
@@ -183,5 +182,45 @@ public class TupleDesc implements Serializable {
     public String toString() {
         // some code goes here
         return "";
+    }
+
+    /**
+     * A help class to facilitate organizing the information of each field
+     * */
+    public static class ColumnMeta implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * The type of the field
+         * */
+        public final FieldType fieldType;
+
+        /**
+         * The name of the field
+         * */
+        public final String       fieldName;
+
+        public ColumnMeta(FieldType t, String n) {
+            this.fieldName = n;
+            this.fieldType = t;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ColumnMeta meta = (ColumnMeta) o;
+            return fieldType == meta.fieldType && Objects.equals(fieldName, meta.fieldName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fieldType, fieldName);
+        }
+
+        public String toString() {
+            return fieldName + "(" + fieldType + ")";
+        }
     }
 }

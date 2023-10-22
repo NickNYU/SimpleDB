@@ -1,6 +1,5 @@
 package simpledb.common;
 
-import simpledb.common.Type;
 import simpledb.storage.DbFile;
 import simpledb.storage.HeapFile;
 import simpledb.storage.TupleDesc;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -127,15 +125,15 @@ public class Catalog {
                 String fields = line.substring(line.indexOf("(") + 1, line.indexOf(")")).trim();
                 String[] els = fields.split(",");
                 ArrayList<String> names = new ArrayList<>();
-                ArrayList<Type> types = new ArrayList<>();
+                ArrayList<FieldType> types = new ArrayList<>();
                 String primaryKey = "";
                 for (String e : els) {
                     String[] els2 = e.trim().split(" ");
                     names.add(els2[0].trim());
                     if (els2[1].trim().equalsIgnoreCase("int"))
-                        types.add(Type.INT_TYPE);
+                        types.add(FieldType.INT_TYPE);
                     else if (els2[1].trim().equalsIgnoreCase("string"))
-                        types.add(Type.STRING_TYPE);
+                        types.add(FieldType.STRING_TYPE);
                     else {
                         System.out.println("Unknown type " + els2[1]);
                         System.exit(0);
@@ -149,7 +147,7 @@ public class Catalog {
                         }
                     }
                 }
-                Type[] typeAr = types.toArray(new Type[0]);
+                FieldType[] typeAr = types.toArray(new FieldType[0]);
                 String[] namesAr = names.toArray(new String[0]);
                 TupleDesc t = new TupleDesc(typeAr, namesAr);
                 HeapFile tabHf = new HeapFile(new File(baseFolder + "/" + name + ".dat"), t);

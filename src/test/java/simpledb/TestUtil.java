@@ -53,14 +53,14 @@ public class TestUtil {
     public static TupleIterator createTupleList(int width, Object[] tupdata) {
         List<Tuple> tuplist = new ArrayList<>();
         TupleDesc td;
-        Type[] types = new Type[width];
+        FieldType[] types = new FieldType[width];
         int i= 0;
         for (int j = 0; j < width; j++) {
             if (tupdata[j] instanceof String) {
-                types[j] = Type.STRING_TYPE;
+                types[j] = FieldType.STRING_TYPE;
             }
             if (tupdata[j] instanceof Integer) {
-                types[j] = Type.INT_TYPE;
+                types[j] = FieldType.INT_TYPE;
             }
         }
         td = new TupleDesc(types);
@@ -71,7 +71,7 @@ public class TestUtil {
                 Field f;
                 Object t = tupdata[i++];
                 if (t instanceof String)
-                    f = new StringField((String)t, Type.STRING_LEN); 
+                    f = new StringField((String)t, FieldType.STRING_LEN);
                 else
                     f = new IntField((Integer)t);
 
