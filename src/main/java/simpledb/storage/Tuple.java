@@ -107,5 +107,6 @@ public class Tuple implements Serializable {
     public void resetTupleDesc(TupleDesc td) {
         // some code goes here
         this.metaRef.set(td);
+        this.fields = new Field[td.numFields()];
     }
 }
