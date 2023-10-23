@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -21,12 +23,14 @@ import java.util.*;
  */
 public class Catalog {
 
+    private final ConcurrentMap<Integer, Table> tables = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<String, Integer> nameIndexer = new ConcurrentHashMap<>();
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
-        // some code goes here
     }
 
     /**
@@ -40,6 +44,10 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        synchronized (this) {
+            tables.put(file.getId(), new Table(file, name, pkeyField));
+            nameIndexer.put(name, file.getId());
+        }
     }
 
     public void addTable(DbFile file, String name) {
@@ -63,7 +71,14 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        if (name == null) {
+            throw new NoSuchElementException("table with null name is not allowed");
+        }
+        Integer id = nameIndexer.get(name);
+        if (id == null) {
+            throw new NoSuchElementException("table with name: " + name + " not found");
+        }
+        return id;
     }
 
     /**
@@ -74,7 +89,11 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        Table table = tables.get(tableid);
+        if (table == null) {
+            throw new NoSuchElementException("table with id: " + tableid + " not found");
+        }
+        return table.getFile().getTupleDesc();
     }
 
     /**
@@ -85,27 +104,44 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        Table table = tables.get(tableid);
+        if (table == null) {
+            throw new NoSuchElementException("table with id: " + tableid + " not found");
+        }
+        return table.getFile();
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
-        return null;
+        Table table = tables.get(tableid);
+        if (table == null) {
+            throw new NoSuchElementException("table with id: " + tableid + " not found");
+        }
+        return table.getPkeyField();
     }
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+        return tables.keySet().iterator();
     }
 
     public String getTableName(int id) {
         // some code goes here
-        return null;
+        // some code goes here
+        Table table = tables.get(id);
+        if (table == null) {
+            throw new NoSuchElementException("table with id: " + id + " not found");
+        }
+        return table.getName();
     }
 
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        synchronized (this) {
+            tables.clear();
+            nameIndexer.clear();
+        }
     }
 
     /**
@@ -160,6 +196,43 @@ public class Catalog {
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Invalid catalog entry : " + line);
             System.exit(0);
+        }
+    }
+
+    private static final class Table {
+        private final DbFile file;
+        private final String name;
+        private final String pkeyField;
+
+        public Table(DbFile file, String name, String pkeyField) {
+            this.file = file;
+            this.name = name;
+            this.pkeyField = pkeyField;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Table table = (Table) o;
+            return Objects.equals(file, table.file) && Objects.equals(name, table.name) && Objects.equals(pkeyField, table.pkeyField);
+        }
+
+        public DbFile getFile() {
+            return file;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPkeyField() {
+            return pkeyField;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(file, name, pkeyField);
         }
     }
 }
