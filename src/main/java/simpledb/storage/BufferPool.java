@@ -1,15 +1,13 @@
 package simpledb.storage;
 
-import simpledb.common.Database;
-import simpledb.common.Permissions;
 import simpledb.common.DbException;
-import simpledb.common.DeadlockException;
+import simpledb.common.Permissions;
+import simpledb.storage.page.DefaultPageManager;
+import simpledb.storage.page.PageManager;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
-import java.io.*;
-
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -23,15 +21,21 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe, all fields are final
  */
 public class BufferPool {
-    /** Bytes per page, including header. */
+    /**
+     * Bytes per page, including header.
+     */
     private static final int DEFAULT_PAGE_SIZE = 4096;
 
-    private static int       pageSize          = DEFAULT_PAGE_SIZE;
+    private static int pageSize = DEFAULT_PAGE_SIZE;
 
-    /** Default number of pages passed to the constructor. This is used by
-    other classes. BufferPool should use the numPages argument to the
-    constructor instead. */
-    public static final int  DEFAULT_PAGES     = 50;
+    /**
+     * Default number of pages passed to the constructor. This is used by
+     * other classes. BufferPool should use the numPages argument to the
+     * constructor instead.
+     */
+    public static final int DEFAULT_PAGES = 50;
+
+    private final PageManager pageManager;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -40,6 +44,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
+        pageManager = new DefaultPageManager(numPages);
     }
 
     public static int getPageSize() {
@@ -74,7 +79,7 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
                                                                         DbException {
         // some code goes here
-        return null;
+        return pageManager.getPage(pid);
     }
 
     /**
