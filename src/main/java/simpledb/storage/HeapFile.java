@@ -1,9 +1,6 @@
 package simpledb.storage;
 
-import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Debug;
-import simpledb.common.Permissions;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
@@ -22,6 +19,12 @@ import java.util.*;
  */
 public class HeapFile implements DbFile {
 
+    private final File file;
+
+    private final TupleDesc tupleDesc;
+
+    private final FileMeta fileMeta;
+
     /**
      * Constructs a heap file backed by the specified file.
      * 
@@ -31,6 +34,9 @@ public class HeapFile implements DbFile {
      */
     public HeapFile(File f, TupleDesc td) {
         // some code goes here
+        this.file = f;
+        this.tupleDesc = td;
+        this.fileMeta = new FileMeta(f);
     }
 
     /**
@@ -40,7 +46,7 @@ public class HeapFile implements DbFile {
      */
     public File getFile() {
         // some code goes here
-        return null;
+        return file;
     }
 
     /**
@@ -54,7 +60,7 @@ public class HeapFile implements DbFile {
      */
     public int getId() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return fileMeta.fd;
     }
 
     /**
@@ -64,7 +70,7 @@ public class HeapFile implements DbFile {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return tupleDesc;
     }
 
     // see DbFile.java for javadocs
@@ -81,10 +87,11 @@ public class HeapFile implements DbFile {
 
     /**
      * Returns the number of pages in this HeapFile.
+     * _tuples per page_ = floor((_page size_ * 8) / (_tuple size_ * 8 + 1))
      */
     public int numPages() {
         // some code goes here
-        return 0;
+        return (int) file.length() / BufferPool.getPageSize();
     }
 
     // see DbFile.java for javadocs
@@ -105,7 +112,42 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
         // some code goes here
-        return null;
+        return new HeapFileIterator(tid, heapFile);
+    }
+
+    private static final class FileMeta {
+        private int fd;
+
+        private FileMeta(File file) {
+            this.fd = file.getAbsoluteFile().hashCode();
+        }
+    }
+
+    private static final class HeapFileIterator extends AbstractDbFileIterator {
+
+        private final TransactionId transactionId;
+
+        private final HeapFile heapFile;
+        public HeapFileIterator(TransactionId transactionId, HeapFile heapFile) {
+            this.transactionId = transactionId;
+            this.heapFile = heapFile;
+        }
+
+        @Override
+        protected Tuple readNext() throws DbException, TransactionAbortedException {
+            int tupleSize = heapFile.getTupleDesc().getSize();
+            return null;
+        }
+
+        @Override
+        public void open() throws DbException, TransactionAbortedException {
+
+        }
+
+        @Override
+        public void rewind() throws DbException, TransactionAbortedException {
+
+        }
     }
 
 }
