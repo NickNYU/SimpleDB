@@ -1,11 +1,14 @@
 package simpledb.storage;
 
+import simpledb.common.Database;
 import simpledb.common.DbException;
+import simpledb.common.Permissions;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
@@ -112,7 +115,7 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
         // some code goes here
-        return new HeapFileIterator(tid, heapFile);
+        return new HeapFileIterator(tid, this);
     }
 
     private static final class FileMeta {
@@ -128,6 +131,9 @@ public class HeapFile implements DbFile {
         private final TransactionId transactionId;
 
         private final HeapFile heapFile;
+
+        private AtomicInteger indexer = new AtomicInteger(0);
+
         public HeapFileIterator(TransactionId transactionId, HeapFile heapFile) {
             this.transactionId = transactionId;
             this.heapFile = heapFile;
@@ -135,12 +141,19 @@ public class HeapFile implements DbFile {
 
         @Override
         protected Tuple readNext() throws DbException, TransactionAbortedException {
-            int tupleSize = heapFile.getTupleDesc().getSize();
+
             return null;
         }
 
         @Override
         public void open() throws DbException, TransactionAbortedException {
+            int tupleSize = heapFile.getTupleDesc().getSize();
+            int pageSize = BufferPool.getPageSize();
+            long heapFileSize = heapFile.file.length();
+            long numOfPages = heapFileSize / pageSize;
+            PageId pageId = new HeapPageId();
+            Database.getBufferPool().getPage(transactionId, 1, Permissions.READ_ONLY);
+            RandomAccessFile randomAccessFile = new RandomAccessFile(heapFile.getFile());
 
         }
 
