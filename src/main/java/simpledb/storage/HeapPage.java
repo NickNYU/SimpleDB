@@ -2,7 +2,6 @@ package simpledb.storage;
 
 import simpledb.common.Database;
 import simpledb.common.DbException;
-import simpledb.common.Debug;
 import simpledb.common.Catalog;
 import simpledb.transaction.TransactionId;
 
@@ -20,7 +19,7 @@ import java.io.*;
 public class HeapPage implements Page {
 
     final HeapPageId   pid;
-    final TupleDesc    td;
+    final TupleDesc tupleDesc;
     final byte[]       header;
     final Tuple[]      tuples;
     final int          numSlots;
@@ -46,7 +45,7 @@ public class HeapPage implements Page {
      */
     public HeapPage(HeapPageId id, byte[] data) throws IOException {
         this.pid = id;
-        this.td = Database.getCatalog().getTupleDesc(id.getTableId());
+        this.tupleDesc = Database.getCatalog().getTupleDesc(id.getTableId());
         this.numSlots = getNumTuples();
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(data));
 
@@ -70,21 +69,22 @@ public class HeapPage implements Page {
 
     /** Retrieve the number of tuples on this page.
         @return the number of tuples on this page
+        `
+        _tuples per page_ = floor((_page size_ * 8) / (_tuple size_ * 8 + 1))
+        `
     */
     private int getNumTuples() {
         // some code goes here
-        return 0;
-
+        return BufferPool.getPageSize() * 8 / (tupleDesc.getSize() * 8 + 1);
     }
 
     /**
      * Computes the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
+     * headerBytes = ceiling(tupsPerPage/8)
      */
     private int getHeaderSize() {
-
-        // some code goes here
-        return 0;
+        return (getNumTuples() + 7) / 8;
 
     }
 
@@ -116,7 +116,7 @@ public class HeapPage implements Page {
      */
     public HeapPageId getId() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return pid;
     }
 
     /**
@@ -126,7 +126,7 @@ public class HeapPage implements Page {
         // if associated bit is not set, read forward to the next tuple, and
         // return null.
         if (!isSlotUsed(slotId)) {
-            for (int i = 0; i < td.getSize(); i++) {
+            for (int i = 0; i < tupleDesc.getSize(); i++) {
                 try {
                     dis.readByte();
                 } catch (IOException e) {
@@ -137,12 +137,12 @@ public class HeapPage implements Page {
         }
 
         // read fields in the tuple
-        Tuple t = new Tuple(td);
+        Tuple t = new Tuple(tupleDesc);
         RecordId rid = new RecordId(pid, slotId);
         t.setRecordId(rid);
         try {
-            for (int j = 0; j < td.numFields(); j++) {
-                Field f = td.getFieldType(j).parse(dis);
+            for (int j = 0; j < tupleDesc.numFields(); j++) {
+                Field f = tupleDesc.getFieldType(j).parse(dis);
                 t.setField(j, f);
             }
         } catch (java.text.ParseException e) {
@@ -184,7 +184,7 @@ public class HeapPage implements Page {
 
             // empty slot
             if (!isSlotUsed(i)) {
-                for (int j = 0; j < td.getSize(); j++) {
+                for (int j = 0; j < tupleDesc.getSize(); j++) {
                     try {
                         dos.writeByte(0);
                     } catch (IOException e) {
@@ -196,7 +196,7 @@ public class HeapPage implements Page {
             }
 
             // non-empty slot
-            for (int j = 0; j < td.numFields(); j++) {
+            for (int j = 0; j < tupleDesc.numFields(); j++) {
                 Field f = tuples[i].getField(j);
                 try {
                     f.serialize(dos);
@@ -208,7 +208,7 @@ public class HeapPage implements Page {
         }
 
         // padding
-        int zerolen = BufferPool.getPageSize() - (header.length + td.getSize() * tuples.length); //- numSlots * td.getSize();
+        int zerolen = BufferPool.getPageSize() - (header.length + tupleDesc.getSize() * tuples.length); //- numSlots * td.getSize();
         byte[] zeroes = new byte[zerolen];
         try {
             dos.write(zeroes, 0, zerolen);
@@ -286,7 +286,13 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        return 0;
+        int counter = 0;
+        for (int slot = 0; slot < numSlots; slot ++) {
+            if (!isSlotUsed(slot)) {
+                counter ++;
+            }
+        }
+        return counter;
     }
 
     /**
@@ -294,7 +300,12 @@ public class HeapPage implements Page {
      */
     public boolean isSlotUsed(int i) {
         // some code goes here
-        return false;
+        if (i >= numSlots) {
+            return false;
+        }
+        int index = i / Byte.SIZE;
+        int pos = i % Byte.SIZE;
+        return ((header[index]) & (1 << pos)) > 0;
     }
 
     /**
@@ -303,6 +314,11 @@ public class HeapPage implements Page {
     private void markSlotUsed(int i, boolean value) {
         // some code goes here
         // not necessary for lab1
+        if (value) {
+            header[i] = 1;
+        } else {
+            header[i] = 0;
+        }
     }
 
     /**
@@ -311,7 +327,33 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        return null;
+        return new HeapPageIterator(this);
+    }
+
+    private static final class HeapPageIterator implements Iterator<Tuple> {
+
+        private final HeapPage heapPage;
+
+        private int indexer = 0;
+
+        public HeapPageIterator(HeapPage heapPage) {
+            this.heapPage = heapPage;
+        }
+
+        @Override
+        public boolean hasNext() {
+            while (indexer < heapPage.numSlots && !heapPage.isSlotUsed(indexer)) {
+                indexer ++;
+            }
+            return indexer < heapPage.numSlots;
+        }
+
+        @Override
+        public Tuple next() {
+            Tuple tuple = heapPage.tuples[indexer];
+            indexer ++;
+            return tuple;
+        }
     }
 
 }

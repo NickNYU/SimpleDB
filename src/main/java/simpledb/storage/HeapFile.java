@@ -79,6 +79,7 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // some code goes here
+//        return Database.getBufferPool().getPage(null, pid, Permissions.READ_ONLY);
         return null;
     }
 
@@ -151,9 +152,9 @@ public class HeapFile implements DbFile {
             int pageSize = BufferPool.getPageSize();
             long heapFileSize = heapFile.file.length();
             long numOfPages = heapFileSize / pageSize;
-            PageId pageId = new HeapPageId();
-            Database.getBufferPool().getPage(transactionId, 1, Permissions.READ_ONLY);
-            RandomAccessFile randomAccessFile = new RandomAccessFile(heapFile.getFile());
+//            PageId pageId = new HeapPageId();
+//            Database.getBufferPool().getPage(transactionId, 1, Permissions.READ_ONLY);
+//            RandomAccessFile randomAccessFile = new RandomAccessFile(heapFile.getFile());
 
         }
 

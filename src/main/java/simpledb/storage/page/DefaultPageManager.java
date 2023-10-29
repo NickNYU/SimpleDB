@@ -1,6 +1,9 @@
 package simpledb.storage.page;
 
+import simpledb.common.Permissions;
 import simpledb.storage.Page;
+import simpledb.storage.PageId;
+import simpledb.transaction.TransactionId;
 
 /**
  * @author nick
@@ -19,7 +22,7 @@ public class DefaultPageManager implements PageManager {
     }
 
     @Override
-    public Page getPage() {
+    public Page getPage(PageId pageId, TransactionId transactionId, Permissions permissions) {
         return null;
     }
 }
