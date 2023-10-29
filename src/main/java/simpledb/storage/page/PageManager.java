@@ -11,5 +11,5 @@ import simpledb.transaction.TransactionId;
  * 2023/10/24
  */
 public interface PageManager {
-    Page getPage(PageId pageId, TransactionId transactionId, Permissions permissions);
+    Page getOrCreate(PageId pageId, TransactionId transactionId, Permissions permissions);
 }

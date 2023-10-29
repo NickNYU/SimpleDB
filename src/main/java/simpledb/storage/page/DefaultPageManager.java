@@ -1,6 +1,12 @@
 package simpledb.storage.page;
 
-import simpledb.storage.Page;
+import simpledb.common.Database;
+import simpledb.common.Permissions;
+import simpledb.storage.*;
+import simpledb.transaction.TransactionId;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author nick
@@ -9,17 +15,19 @@ import simpledb.storage.Page;
  */
 public class DefaultPageManager implements PageManager {
 
-    private final int pageNum;
-
-    private final Page[] pages;
-
-    public DefaultPageManager(int pageNum) {
-        this.pageNum = pageNum;
-        this.pages = new Page[pageNum];
-    }
+    private final ConcurrentMap<PageId, Page> pages = new ConcurrentHashMap<>();
 
     @Override
-    public Page getPage() {
-        return null;
+    public Page getOrCreate(PageId pageId, TransactionId transactionId, Permissions permissions) {
+        if (!pages.containsKey(pageId)) {
+            synchronized (this) {
+                if (!pages.containsKey(pageId)) {
+                    DbFile dbFile = Database.getCatalog().getDatabaseFile(pageId.getTableId());
+                    Page page = dbFile.readPage(pageId);
+                    pages.put(pageId, page);
+                }
+            }
+        }
+        return pages.get(pageId);
     }
 }
