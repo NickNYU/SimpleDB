@@ -3,12 +3,13 @@ package simpledb.storage;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Permissions;
+import simpledb.core.file.ByteArrayFileReader;
 import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
@@ -79,8 +80,15 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // some code goes here
-//        return Database.getBufferPool().getPage(null, pid, Permissions.READ_ONLY);
-        return null;
+        try {
+            int pageNum = pid.getPageNumber();
+            int begin = BufferPool.getPageSize() * pageNum;
+            int end = BufferPool.getPageSize() * (pageNum + 1);
+            HeapPageId pageId = new HeapPageId(pid.getTableId(), pid.getPageNumber());
+            return new HeapPage(pageId, new ByteArrayFileReader().getContent(this.file, begin, end));
+        } catch (Throwable throwable) {
+            throw new IllegalArgumentException(throwable);
+        }
     }
 
     // see DbFile.java for javadocs
@@ -133,7 +141,13 @@ public class HeapFile implements DbFile {
 
         private final HeapFile heapFile;
 
-        private AtomicInteger indexer = new AtomicInteger(0);
+        private int pageNum = 0;
+
+        private Iterator<Tuple> tupleIterator;
+
+        private final AtomicBoolean switcher = new AtomicBoolean(false);
+
+        private final AtomicBoolean closeGate = new AtomicBoolean(false);
 
         public HeapFileIterator(TransactionId transactionId, HeapFile heapFile) {
             this.transactionId = transactionId;
@@ -142,25 +156,41 @@ public class HeapFile implements DbFile {
 
         @Override
         protected Tuple readNext() throws DbException, TransactionAbortedException {
-
-            return null;
+            if (closeGate.get()) {
+                throw new NoSuchElementException("iterator not open yet");
+            }
+            if (!switcher.get() || pageNum > heapFile.numPages()) {
+                return null;
+            }
+            if (tupleIterator != null && tupleIterator.hasNext()) {
+                return tupleIterator.next();
+            }
+            while (pageNum < heapFile.numPages() && (tupleIterator == null || !tupleIterator.hasNext())) {
+                HeapPage page = (HeapPage) Database.getBufferPool()
+                        .getPage(transactionId,
+                                new HeapPageId(heapFile.getId(), pageNum),
+                                Permissions.READ_ONLY);
+                tupleIterator = page.iterator();
+                pageNum ++;
+            }
+            return tupleIterator.next();
         }
 
         @Override
         public void open() throws DbException, TransactionAbortedException {
-            int tupleSize = heapFile.getTupleDesc().getSize();
-            int pageSize = BufferPool.getPageSize();
-            long heapFileSize = heapFile.file.length();
-            long numOfPages = heapFileSize / pageSize;
-//            PageId pageId = new HeapPageId();
-//            Database.getBufferPool().getPage(transactionId, 1, Permissions.READ_ONLY);
-//            RandomAccessFile randomAccessFile = new RandomAccessFile(heapFile.getFile());
-
+            switcher.compareAndSet(false, true);
         }
 
         @Override
         public void rewind() throws DbException, TransactionAbortedException {
+            pageNum = 0;
+            tupleIterator = null;
+        }
 
+        @Override
+        public void close() {
+            closeGate.compareAndSet(false, true);
+            super.close();
         }
     }
 

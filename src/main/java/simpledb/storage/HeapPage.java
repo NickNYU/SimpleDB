@@ -261,6 +261,15 @@ public class HeapPage implements Page {
     public void insertTuple(Tuple t) throws DbException {
         // some code goes here
         // not necessary for lab1
+        if (!this.tupleDesc.equals(t.getTupleDesc())) {
+            throw new DbException("tuple desc not matched: " + t.getTupleDesc());
+        }
+        if (getNumEmptySlots() == 0) {
+            throw new DbException("Page full");
+        }
+        int index = t.getRecordId().getTupleNumber();
+        tuples[index] = t;
+        markSlotUsed(index, true);
     }
 
     /**
@@ -314,10 +323,14 @@ public class HeapPage implements Page {
     private void markSlotUsed(int i, boolean value) {
         // some code goes here
         // not necessary for lab1
+        int index = i / Byte.SIZE;
+        int pos = i % Byte.SIZE;
         if (value) {
-            header[i] = 1;
+            header[index] |= (1 << pos);
         } else {
-            header[i] = 0;
+            byte sign = (byte)(1 << pos);
+            sign = (byte) ~sign;
+            header[index] = (byte) (sign & header[index]);
         }
     }
 
@@ -350,6 +363,9 @@ public class HeapPage implements Page {
 
         @Override
         public Tuple next() {
+            if (indexer >= heapPage.numSlots) {
+                return null;
+            }
             Tuple tuple = heapPage.tuples[indexer];
             indexer ++;
             return tuple;
