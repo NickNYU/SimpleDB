@@ -4,6 +4,8 @@ import simpledb.common.FieldType;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 /**
  * TupleDesc describes the schema of a tuple.
@@ -181,7 +183,21 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        return "";
+        StringBuilder sb = new StringBuilder();
+        for (ColumnMeta meta : columnMetas) {
+            sb.append(meta.toString()).append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public TupleDesc withPrefix(String prefix) {
+        FieldType[] fieldTypes = columnMetas.stream().map(columnMeta -> columnMeta.fieldType).toArray(FieldType[]::new);
+        String[] fieldNames = columnMetas.stream()
+                .map(columnMeta -> columnMeta.fieldName)
+                .map(fieldName->prefix+"."+fieldName)
+                .toArray(String[]::new);
+        return new TupleDesc(fieldTypes, fieldNames);
     }
 
     /**
