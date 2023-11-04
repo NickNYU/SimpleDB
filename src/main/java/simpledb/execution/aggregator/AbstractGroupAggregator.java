@@ -2,6 +2,7 @@ package simpledb.execution.aggregator;
 
 import simpledb.execution.Aggregator;
 import simpledb.storage.Field;
+import simpledb.storage.IntField;
 import simpledb.storage.Tuple;
 
 /**
@@ -56,20 +57,26 @@ public abstract class AbstractGroupAggregator implements GroupAggregator {
     protected abstract int calculateMin(Calculator calculator, Field aggregator);
 
     @Override
-    public int getResult() {
+    public IntField getResult() {
+        int rs = -1;
         switch (operator) {
             case MIN:
-                return calculator.getMin();
+                rs = calculator.getMin();
+                break;
             case AVG:
-                return calculator.getAvg();
+                rs = calculator.getAvg();
+                break;
             case SUM:
-                return calculator.getSum();
+                rs = calculator.getSum();
+                break;
             case COUNT:
-                return calculator.getCounter();
+                rs = calculator.getCounter();
+                break;
             case MAX:
-                return calculator.getMax();
+                rs = calculator.getMax();
+                break;
         }
-        return -1;
+        return new IntField(rs);
     }
 
     @Override

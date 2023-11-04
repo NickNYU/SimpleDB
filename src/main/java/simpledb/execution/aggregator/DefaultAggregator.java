@@ -15,7 +15,7 @@ import java.util.Map;
  * @e-mail cz739@nyu.edu
  * 2023/11/4
  */
-public abstract class AbstractAggregator implements Aggregator {
+public class DefaultAggregator implements Aggregator {
 
     protected TupleDesc tupleDesc;
 
@@ -23,7 +23,7 @@ public abstract class AbstractAggregator implements Aggregator {
 
     private final Map<Field, GroupAggregator> groupByFieldIndexer = new HashMap<>();
 
-    public AbstractAggregator(int gbfield, FieldType gbfieldtype, int afield, Op what) {
+    public DefaultAggregator(int gbfield, FieldType gbfieldtype, int afield, Op what) {
         // some code goes here
         this.factory = new GroupAggregatorFactory(gbfieldtype, gbfield, afield, what);
     }
@@ -36,29 +36,35 @@ public abstract class AbstractAggregator implements Aggregator {
 
     @Override
     public OpIterator iterator() {
-        final List<Tuple> tuples;
-        if (!isNonGroupingBy()) {
-            tuples = new ArrayList<>(groupByFieldIndexer.size());
-            this.groupByFieldIndexer.forEach((key, aggregator) -> {
-                final Tuple tuple = new Tuple(tupleDesc);
-                tuple.setField(0, key);
-                tuple.setField(1, getAggregatedField(aggregator));
-                tuples.add(tuple);
-            });
-        } else {
-            tuples = new ArrayList<>(1);
+        final List<Tuple> tuples = new ArrayList<>(groupByFieldIndexer.size());
+        this.groupByFieldIndexer.forEach((key, aggregator) -> {
             final Tuple tuple = new Tuple(tupleDesc);
-            tuple.setField(0, getAggregatedField(this.groupByFieldIndexer.get(factory.DEFAULT_FIELD)));
+            if (isNonGroupingBy()) {
+                tuple.setField(0, aggregator.getResult());
+            } else {
+                tuple.setField(0, key);
+                tuple.setField(1, aggregator.getResult());
+            }
             tuples.add(tuple);
-        }
+        });
         return new TupleIterator(this.tupleDesc, tuples);
     }
 
-    private Field getAggregatedField(GroupAggregator groupAggregator) {
-        return new IntField(groupAggregator.getResult());
+    protected void generateTupleDescIfNeeded(Tuple tuple) {
+        if (tupleDesc != null) {
+            return;
+        }
+        TupleDesc origin = tuple.getTupleDesc();
+        if (isNonGroupingBy()) {
+            FieldType[] types = new FieldType[] { FieldType.INT_TYPE };
+            String[] names = new String[] { "" };
+            this.tupleDesc = new TupleDesc(types, names);
+        } else {
+            FieldType[] types = new FieldType[] { factory.getFieldType(), FieldType.INT_TYPE };
+            String[] names = new String[] { origin.getFieldName(factory.getGroupByFieldIndex()), origin.getFieldName(factory.getAggregatedFieldIndex()) };
+            this.tupleDesc = new TupleDesc(types, names);
+        }
     }
-
-    protected abstract void generateTupleDescIfNeeded(Tuple tup);
 
     private GroupAggregator getOrCreate(Tuple tuple) {
         GroupAggregator aggregator = groupByFieldIndexer.get(factory.getGroupKey(tuple));
@@ -120,6 +126,9 @@ public abstract class AbstractAggregator implements Aggregator {
         }
 
         private GroupAggregator create() {
+            if (fieldType == null) {
+                return new IntegerGroupAggregator(groupByFieldIndex, aggregatedFieldIndex, op);
+            }
             switch (fieldType) {
                 case INT_TYPE:
                     return new IntegerGroupAggregator(groupByFieldIndex, aggregatedFieldIndex, op);
