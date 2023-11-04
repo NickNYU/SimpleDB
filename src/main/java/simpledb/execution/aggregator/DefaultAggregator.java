@@ -21,7 +21,7 @@ public class DefaultAggregator implements Aggregator {
 
     protected final GroupAggregatorFactory factory;
 
-    private final Map<Field, GroupAggregator> groupByFieldIndexer = new HashMap<>();
+    private final Map<Field, AggregatedGroup> groupByFieldIndexer = new HashMap<>();
 
     public DefaultAggregator(int gbfield, FieldType gbfieldtype, int afield, Op what) {
         // some code goes here
@@ -66,8 +66,8 @@ public class DefaultAggregator implements Aggregator {
         }
     }
 
-    private GroupAggregator getOrCreate(Tuple tuple) {
-        GroupAggregator aggregator = groupByFieldIndexer.get(factory.getGroupKey(tuple));
+    private AggregatedGroup getOrCreate(Tuple tuple) {
+        AggregatedGroup aggregator = groupByFieldIndexer.get(factory.getGroupKey(tuple));
         if (aggregator == null) {
             aggregator = factory.create();
             groupByFieldIndexer.put(factory.getGroupKey(tuple), aggregator);
@@ -125,17 +125,8 @@ public class DefaultAggregator implements Aggregator {
             return fieldType;
         }
 
-        private GroupAggregator create() {
-            if (fieldType == null) {
-                return new IntegerGroupAggregator(groupByFieldIndex, aggregatedFieldIndex, op);
-            }
-            switch (fieldType) {
-                case INT_TYPE:
-                    return new IntegerGroupAggregator(groupByFieldIndex, aggregatedFieldIndex, op);
-                case STRING_TYPE:
-                    return new StringGroupAggregator(groupByFieldIndex, aggregatedFieldIndex, op);
-            }
-            throw new UnsupportedOperationException("FieldType: " + fieldType);
+        private AggregatedGroup create() {
+            return new DefaultAggregatedGroup(groupByFieldIndex, aggregatedFieldIndex, op);
         }
     }
 }

@@ -10,7 +10,7 @@ import simpledb.storage.Tuple;
  * @e-mail cz739@nyu.edu
  * 2023/11/4
  */
-public abstract class AbstractGroupAggregator implements GroupAggregator {
+public class DefaultAggregatedGroup implements AggregatedGroup {
 
     protected final int groupByField;
 
@@ -20,7 +20,7 @@ public abstract class AbstractGroupAggregator implements GroupAggregator {
 
     protected final Calculator calculator;
 
-    public AbstractGroupAggregator(int groupByField, int aggregatorField, Aggregator.Op op) {
+    public DefaultAggregatedGroup(int groupByField, int aggregatorField, Aggregator.Op op) {
         this.groupByField = groupByField;
         this.aggregatorField = aggregatorField;
         this.operator = op;
@@ -50,11 +50,17 @@ public abstract class AbstractGroupAggregator implements GroupAggregator {
         }
     }
 
-    protected abstract int calculateMax(Calculator calculator, Field aggregator);
+    private int calculateMax(Calculator calculator, Field aggregator) {
+        return Math.max(calculator.getMax(), ((IntField) aggregator).getValue());
+    }
 
-    protected abstract int calculateSum(Calculator calculator, Field aggregator);
+    private int calculateSum(Calculator calculator, Field aggregator) {
+        return calculator.getSum() + ((IntField) aggregator).getValue();
+    }
 
-    protected abstract int calculateMin(Calculator calculator, Field aggregator);
+    private int calculateMin(Calculator calculator, Field aggregator) {
+        return Math.min(calculator.getMin(), ((IntField) aggregator).getValue());
+    }
 
     @Override
     public IntField getResult() {
