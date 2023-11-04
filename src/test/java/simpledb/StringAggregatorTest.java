@@ -8,7 +8,7 @@ import org.junit.Test;
 import simpledb.common.FieldType;
 import simpledb.execution.Aggregator;
 import simpledb.execution.OpIterator;
-import simpledb.execution.StringAggregator;
+import simpledb.execution.aggregator.DefaultAggregator;
 import simpledb.systemtest.SimpleDbTestBase;
 import static org.junit.Assert.assertEquals;
 import junit.framework.JUnit4TestAdapter;
@@ -47,7 +47,7 @@ public class StringAggregatorTest extends SimpleDbTestBase {
    */
   @Test public void mergeCount() throws Exception {
     scan1.open();
-    StringAggregator agg = new StringAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.COUNT);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.COUNT);
 
     for (int[] step : count) {
       agg.mergeTupleIntoGroup(scan1.next());
@@ -63,7 +63,7 @@ public class StringAggregatorTest extends SimpleDbTestBase {
   @Test public void testIterator() throws Exception {
     // first, populate the aggregator via sum over scan1
     scan1.open();
-    StringAggregator agg = new StringAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.COUNT);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.COUNT);
     try {
       while (true)
         agg.mergeTupleIntoGroup(scan1.next());

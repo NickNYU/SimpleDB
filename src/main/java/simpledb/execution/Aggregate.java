@@ -2,6 +2,7 @@ package simpledb.execution;
 
 import simpledb.common.DbException;
 import simpledb.common.FieldType;
+import simpledb.execution.aggregator.DefaultAggregator;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 import simpledb.storage.TupleIterator;
@@ -37,7 +38,7 @@ public class Aggregate extends Operator {
      * Constructor.
      * <p>
      * Implementation hint: depending on the type of afield, you will want to
-     * construct an {@link IntegerAggregator} or {@link StringAggregator} to help
+     * construct an {@link Aggregator} to help
      * you with your implementation of readNext().
      *
      * @param child  The OpIterator that is feeding us tuples.
@@ -110,14 +111,8 @@ public class Aggregate extends Operator {
         super.open();
         this.child.open();
 
-        TupleDesc originTd = this.child.getTupleDesc();
         // Build aggregator
-        Aggregator aggregator;
-        if (originTd.getFieldType(groupByFieldIndex) == FieldType.INT_TYPE) {
-            aggregator = new IntegerAggregator(this.groupByFieldIndex, this.fieldType, this.aggregateFieldIndex, this.operator);
-        } else {
-            aggregator = new StringAggregator(this.groupByFieldIndex, this.fieldType, this.aggregateFieldIndex, this.operator);
-        }
+        Aggregator aggregator = new DefaultAggregator(this.groupByFieldIndex, this.fieldType, this.aggregateFieldIndex, this.operator);
 
         // Merge tuples into group
         while (this.child.hasNext()) {
@@ -165,16 +160,21 @@ public class Aggregate extends Operator {
         if (this.td != null) {
             return this.td;
         }
-        if (this.groupByFieldIndex == NO_GROUPING) {
-            FieldType[] types = new FieldType[] { FieldType.INT_TYPE };
-            String[] names = new String[] { this.aggregateFieldName() };
-            this.td = new TupleDesc(types, names);
-        } else {
-            FieldType[] types = new FieldType[] { this.fieldType, FieldType.INT_TYPE };
-            String[] names = new String[] { this.groupFieldName(), this.aggregateFieldName() };
-            this.td = new TupleDesc(types, names);
-        }
+        this.td = createTupleDesc();
         return this.td;
+    }
+
+    private TupleDesc createTupleDesc() {
+        FieldType[] types;
+        String[] names;
+        if (this.groupByFieldIndex == NO_GROUPING) {
+            types = new FieldType[]{FieldType.INT_TYPE};
+            names = new String[]{this.aggregateFieldName()};
+        } else {
+            types = new FieldType[]{this.fieldType, FieldType.INT_TYPE};
+            names = new String[]{this.groupFieldName(), this.aggregateFieldName()};
+        }
+        return new TupleDesc(types, names);
     }
 
     public void close() {

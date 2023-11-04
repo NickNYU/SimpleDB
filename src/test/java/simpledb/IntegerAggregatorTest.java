@@ -1,19 +1,17 @@
 package simpledb;
 
-import static org.junit.Assert.assertEquals;
+import junit.framework.JUnit4TestAdapter;
+import org.junit.Before;
+import org.junit.Test;
+import simpledb.common.FieldType;
+import simpledb.execution.Aggregator;
+import simpledb.execution.OpIterator;
+import simpledb.execution.aggregator.DefaultAggregator;
+import simpledb.systemtest.SimpleDbTestBase;
 
 import java.util.NoSuchElementException;
 
-import junit.framework.JUnit4TestAdapter;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import simpledb.common.FieldType;
-import simpledb.execution.Aggregator;
-import simpledb.execution.IntegerAggregator;
-import simpledb.execution.OpIterator;
-import simpledb.systemtest.SimpleDbTestBase;
+import static org.junit.Assert.assertEquals;
 
 public class IntegerAggregatorTest extends SimpleDbTestBase {
 
@@ -68,11 +66,11 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
   }
 
   /**
-   * Test IntegerAggregator.mergeTupleIntoGroup() and iterator() over a sum
+   * Test DefaultAggregator.mergeTupleIntoGroup() and iterator() over a sum
    */
   @Test public void mergeSum() throws Exception {
     scan1.open();
-    IntegerAggregator agg = new IntegerAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.SUM);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.SUM);
     
     for (int[] step : sum) {
       agg.mergeTupleIntoGroup(scan1.next());
@@ -83,11 +81,11 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
   }
 
   /**
-   * Test IntegerAggregator.mergeTupleIntoGroup() and iterator() over a min
+   * Test DefaultAggregator.mergeTupleIntoGroup() and iterator() over a min
    */
   @Test public void mergeMin() throws Exception {
     scan1.open();
-    IntegerAggregator agg = new IntegerAggregator(0, FieldType.INT_TYPE,  1, Aggregator.Op.MIN);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.MIN);
 
     OpIterator it;
     for (int[] step : min) {
@@ -99,11 +97,11 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
   }
 
   /**
-   * Test IntegerAggregator.mergeTupleIntoGroup() and iterator() over a max
+   * Test DefaultAggregator.mergeTupleIntoGroup() and iterator() over a max
    */
   @Test public void mergeMax() throws Exception {
     scan1.open();
-    IntegerAggregator agg = new IntegerAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.MAX);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.MAX);
 
     OpIterator it;
     for (int[] step : max) {
@@ -115,11 +113,11 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
   }
 
   /**
-   * Test IntegerAggregator.mergeTupleIntoGroup() and iterator() over an avg
+   * Test DefaultAggregator.mergeTupleIntoGroup() and iterator() over an avg
    */
   @Test public void mergeAvg() throws Exception {
     scan1.open();
-    IntegerAggregator agg = new IntegerAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.AVG);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.AVG);
 
     OpIterator it;
     for (int[] step : avg) {
@@ -131,12 +129,12 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
   }
 
   /**
-   * Test IntegerAggregator.iterator() for OpIterator behaviour
+   * Test DefaultAggregator.iterator() for OpIterator behaviour
    */
   @Test public void testIterator() throws Exception {
     // first, populate the aggregator via sum over scan1
     scan1.open();
-    IntegerAggregator agg = new IntegerAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.SUM);
+    DefaultAggregator agg = new DefaultAggregator(0, FieldType.INT_TYPE, 1, Aggregator.Op.SUM);
     try {
       while (true)
         agg.mergeTupleIntoGroup(scan1.next());
@@ -176,7 +174,7 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
     it.close();
     try {
       it.next();
-      throw new Exception("IntegerAggregator iterator yielded tuple after close");
+      throw new Exception("DefaultAggregator iterator yielded tuple after close");
     } catch (Exception e) {
       // explicitly ignored
     }
