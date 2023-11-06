@@ -72,7 +72,12 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/zql.jar</systemPath>
         </dependency>
-
+        <!-- Other dependencies -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.0.1-jre</version> <!-- Replace with the latest version -->
+        </dependency>
     </dependencies>
 
     <build>
