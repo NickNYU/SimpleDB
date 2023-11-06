@@ -12,4 +12,24 @@ import simpledb.transaction.TransactionId;
  */
 public interface PageManager {
     Page getOrCreate(PageId pageId, TransactionId transactionId, Permissions permissions);
+
+    Page get(PageId pageId);
+
+    void add(Page page);
+
+    void remove(PageId pageId);
+
+    void refresh(Page page);
+
+    void traverse(Traverser traverser);
+
+    void evict(EvictFunction evictFunction);
+
+    public interface Traverser {
+        void action(Page page);
+    }
+
+    public interface EvictFunction {
+        void action(Page page);
+    }
 }

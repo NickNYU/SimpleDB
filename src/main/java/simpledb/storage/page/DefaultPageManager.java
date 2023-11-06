@@ -30,4 +30,34 @@ public class DefaultPageManager implements PageManager {
         }
         return pages.get(pageId);
     }
+
+    @Override
+    public Page get(PageId pageId) {
+        return pages.get(pageId);
+    }
+
+    @Override
+    public void add(Page page) {
+        pages.put(page.getId(), page);
+    }
+
+    @Override
+    public void remove(PageId pageId) {
+        pages.remove(pageId);
+    }
+
+    @Override
+    public void refresh(Page page) {
+        //todo: add LRU refresh logic
+    }
+
+    @Override
+    public void traverse(Traverser traverser) {
+        pages.forEach((pageId, page) -> {traverser.action(page);});
+    }
+
+    @Override
+    public void evict(EvictFunction evictFunction) {
+
+    }
 }

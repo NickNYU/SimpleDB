@@ -16,6 +16,9 @@ import java.io.*;
  * @see BufferPool
  *
  */
+//TODO: add freelist, to hold deleted tuples
+// 1. when insert, use free tuples first, and release free list
+// 2. when delete, send delete tuple to free list, and free used tuple
 public class HeapPage implements Page {
 
     final HeapPageId   pid;
@@ -26,6 +29,8 @@ public class HeapPage implements Page {
 
     byte[]             oldData;
     private final Byte oldDataLock = (byte) 0;
+
+    private TransactionId transactionId;
 
     /**
      * Create a HeapPage from a set of bytes of data read from disk.
@@ -249,6 +254,17 @@ public class HeapPage implements Page {
     public void deleteTuple(Tuple t) throws DbException {
         // some code goes here
         // not necessary for lab1
+        final RecordId recordId = t.getRecordId();
+        final HeapPageId pageId = (HeapPageId) recordId.getPageId();
+        final int tn = recordId.getTupleNumber();
+        if (!pageId.equals(this.pid)) {
+            throw new DbException("Page id not match");
+        }
+        if (!isSlotUsed(tn)) {
+            throw new DbException("Slot is not used");
+        }
+        markSlotUsed(tn, false);
+        this.tuples[tn] = null;
     }
 
     /**
@@ -264,12 +280,16 @@ public class HeapPage implements Page {
         if (!this.tupleDesc.equals(t.getTupleDesc())) {
             throw new DbException("tuple desc not matched: " + t.getTupleDesc());
         }
-        if (getNumEmptySlots() == 0) {
-            throw new DbException("Page full");
+        for (int tupleNumber = 0; tupleNumber < getNumTuples(); tupleNumber++) {
+            if (isSlotUsed(tupleNumber)) {
+                continue;
+            }
+            markSlotUsed(tupleNumber, true);
+            t.setRecordId(new RecordId(this.pid, tupleNumber));
+            this.tuples[tupleNumber] = t;
+            return;
         }
-        int index = t.getRecordId().getTupleNumber();
-        tuples[index] = t;
-        markSlotUsed(index, true);
+        throw new DbException("The page is full");
     }
 
     /**
@@ -279,6 +299,11 @@ public class HeapPage implements Page {
     public void markDirty(boolean dirty, TransactionId tid) {
         // some code goes here
         // not necessary for lab1
+        if (dirty) {
+            this.transactionId = tid;
+        } else {
+            this.transactionId = null;
+        }
     }
 
     /**
@@ -287,7 +312,7 @@ public class HeapPage implements Page {
     public TransactionId isDirty() {
         // some code goes here
         // Not necessary for lab1
-        return null;
+        return this.transactionId;
     }
 
     /**
@@ -320,11 +345,11 @@ public class HeapPage implements Page {
     /**
      * Abstraction to fill or clear a slot on this page.
      */
-    private void markSlotUsed(int i, boolean value) {
+    private void markSlotUsed(int tupleNum, boolean value) {
         // some code goes here
         // not necessary for lab1
-        int index = i / Byte.SIZE;
-        int pos = i % Byte.SIZE;
+        int index = tupleNum / Byte.SIZE;
+        int pos = tupleNum % Byte.SIZE;
         if (value) {
             header[index] |= (1 << pos);
         } else {

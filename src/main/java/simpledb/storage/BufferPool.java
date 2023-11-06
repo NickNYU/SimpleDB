@@ -10,6 +10,7 @@ import simpledb.transaction.TransactionAbortedException;
 import simpledb.transaction.TransactionId;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -146,6 +147,12 @@ public class BufferPool {
                                                                     TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
+        HeapFile heapFile = (HeapFile) Database.getCatalog().getDatabaseFile(tableId);
+        List<Page> pages = heapFile.insertTuple(tid, t);
+        for (Page page : pages) {
+            pageManager.add(page);
+            page.markDirty(true, tid);
+        }
     }
 
     /**
@@ -164,6 +171,11 @@ public class BufferPool {
     public void deleteTuple(TransactionId tid, Tuple t) throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
+        HeapFile heapFile = (HeapFile) Database.getCatalog().getDatabaseFile(t.getRecordId().getPageId().getTableId());
+        List<Page> pages = heapFile.deleteTuple(tid, t);
+        for (Page page : pages) {
+            page.markDirty(true, tid);
+        }
     }
 
     /**
@@ -174,7 +186,18 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
+        pageManager.traverse(new PageManager.Traverser() {
+            @Override
+            public void action(Page page) {
+                if (page.isDirty() != null) {
+                    try {
+                        Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        });
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -188,6 +211,7 @@ public class BufferPool {
     public synchronized void discardPage(PageId pid) {
         // some code goes here
         // not necessary for lab1
+        pageManager.remove(pid);
     }
 
     /**
@@ -197,6 +221,10 @@ public class BufferPool {
     private synchronized void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+        Page page = pageManager.get(pid);
+        if (page != null) {
+            writePage(page);
+        }
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -204,6 +232,14 @@ public class BufferPool {
     public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for lab1|lab2
+        pageManager.traverse(new PageManager.Traverser() {
+            @Override
+            public void action(Page page) {
+                if (page.isDirty() != tid) {
+                    writePage(page);
+                }
+            }
+        });
     }
 
     /**
@@ -213,6 +249,19 @@ public class BufferPool {
     private synchronized void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        pageManager.evict(new PageManager.EvictFunction() {
+            @Override
+            public void action(Page page) {
+                writePage(page);
+            }
+        });
     }
+
+    private void writePage(Page page) {
+        try {
+            Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }    }
 
 }
