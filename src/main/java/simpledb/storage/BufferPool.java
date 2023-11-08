@@ -47,7 +47,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
-        pageManager = new DefaultPageManager();
+        pageManager = new DefaultPageManager(numPages);
     }
 
     public static int getPageSize() {
@@ -262,6 +262,7 @@ public class BufferPool {
             Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }    }
+        }
+    }
 
 }
