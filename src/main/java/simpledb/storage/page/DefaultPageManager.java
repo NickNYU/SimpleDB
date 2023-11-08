@@ -1,10 +1,12 @@
 package simpledb.storage.page;
 
+import com.google.common.collect.Maps;
 import simpledb.common.Database;
 import simpledb.common.Permissions;
 import simpledb.storage.*;
 import simpledb.transaction.TransactionId;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -15,7 +17,19 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class DefaultPageManager implements PageManager {
 
-    private final ConcurrentMap<PageId, Page> pages = new ConcurrentHashMap<>();
+    private final ConcurrentMap<PageId, ListNode> pages = new ConcurrentHashMap<>();
+
+    private ListNode head = new ListNode(null);
+
+    private ListNode tail = new ListNode(null);
+
+    private final int capacity;
+
+    public DefaultPageManager(int capacity) {
+        this.capacity = capacity;
+        head.next = tail;
+        tail.prev = head;
+    }
 
     @Override
     public Page getOrCreate(PageId pageId, TransactionId transactionId, Permissions permissions) {
@@ -24,40 +38,104 @@ public class DefaultPageManager implements PageManager {
                 if (!pages.containsKey(pageId)) {
                     DbFile dbFile = Database.getCatalog().getDatabaseFile(pageId.getTableId());
                     Page page = dbFile.readPage(pageId);
-                    pages.put(pageId, page);
+                    internalAdd(page);
+                    if (pages.size() > this.capacity) {
+                        removeLast();
+                    }
                 }
             }
         }
-        return pages.get(pageId);
+        return get(pageId);
     }
 
     @Override
     public Page get(PageId pageId) {
-        return pages.get(pageId);
+        ListNode node = pages.get(pageId);
+        if (node == null) {
+            return null;
+        }
+        popNode(node);
+        return node.page;
+    }
+    private void internalAdd(Page page) {
+        pages.put(page.getId(), new ListNode(page));
+        popNode(pages.get(page.getId()));
     }
 
     @Override
     public void add(Page page) {
-        pages.put(page.getId(), page);
+        if (!pages.containsKey(page.getId())) {
+            internalAdd(page);
+            if (pages.size() > this.capacity) {
+                removeLast();
+            }
+        } else {
+            popNode(pages.get(page.getId()));
+        }
     }
 
     @Override
     public void remove(PageId pageId) {
-        pages.remove(pageId);
+        ListNode node = pages.remove(pageId);
+        removeNode(node);
     }
 
     @Override
     public void refresh(Page page) {
-        //todo: add LRU refresh logic
+        popNode(pages.get(page.getId()));
     }
 
     @Override
     public void traverse(Traverser traverser) {
-        pages.forEach((pageId, page) -> {traverser.action(page);});
+        pages.forEach((pageId, node) -> {traverser.action(node.page);});
     }
 
     @Override
     public void evict(EvictFunction evictFunction) {
+        Map<PageId, ListNode> iterator = Maps.newHashMap(this.pages);
+        iterator.forEach((pageId, node) -> {
+            if (node.page.isDirty() != null) {
+                remove(pageId);
+                evictFunction.action(node.page);
+            }
+        });
+    }
 
+    private void popNode(ListNode node) {
+        removeNode(node);
+
+        ListNode prevFirst = head.next;
+        head.next = node;
+        node.prev = head;
+
+        node.next = prevFirst;
+        prevFirst.prev = node;
+    }
+
+    private void removeNode(ListNode node) {
+        if (node.prev != null) {
+            node.prev.next = node.next;
+        }
+        if (node.next != null) {
+            node.next.prev = node.prev;
+        }
+    }
+
+    private void removeLast() {
+        ListNode last = tail.prev;
+        removeNode(last);
+        pages.remove(last.page.getId());
+    }
+
+    private static final class ListNode {
+        private final Page page;
+
+        private ListNode prev;
+
+        private ListNode next;
+
+        public ListNode(Page page) {
+            this.page = page;
+        }
     }
 }
