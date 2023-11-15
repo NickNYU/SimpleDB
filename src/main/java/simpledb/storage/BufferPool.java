@@ -1,9 +1,12 @@
 package simpledb.storage;
 
-import simpledb.common.Catalog;
+import com.google.common.collect.Sets;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Permissions;
+import simpledb.storage.lock.DefaultLockManager;
+import simpledb.storage.lock.LockManager;
+import simpledb.storage.lock.Locker;
 import simpledb.storage.page.DefaultPageManager;
 import simpledb.storage.page.PageManager;
 import simpledb.transaction.TransactionAbortedException;
@@ -11,6 +14,8 @@ import simpledb.transaction.TransactionId;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -40,6 +45,8 @@ public class BufferPool {
 
     private final PageManager pageManager;
 
+    private final LockManager lockManager;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -48,6 +55,7 @@ public class BufferPool {
     public BufferPool(int numPages) {
         // some code goes here
         pageManager = new DefaultPageManager(numPages);
+        lockManager = new DefaultLockManager();
     }
 
     public static int getPageSize() {
@@ -82,7 +90,16 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm) throws TransactionAbortedException,
                                                                         DbException {
         // some code goes here
-        return pageManager.getOrCreate(pid, tid, perm);
+        Locker locker = lockManager.getLock(tid, pid);
+        try {
+            if (!locker.hasHolder(tid, perm) && !locker.tryLock(2, TimeUnit.SECONDS, perm)) {
+                throw new TransactionAbortedException();
+            }
+            lockManager.record(tid, pid, perm);
+            return pageManager.getOrCreate(pid, tid, perm);
+        } catch (InterruptedException e) {
+            throw new TransactionAbortedException();
+        }
     }
 
     /**
@@ -97,6 +114,7 @@ public class BufferPool {
     public void unsafeReleasePage(TransactionId tid, PageId pid) {
         // some code goes here
         // not necessary for lab1|lab2
+        lockManager.release(tid, pid);
     }
 
     /**
@@ -107,13 +125,14 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid) {
         // some code goes here
         // not necessary for lab1|lab2
+        lockManager.releaseAll(tid);
     }
 
     /** Return true if the specified transaction has a lock on the specified page */
     public boolean holdsLock(TransactionId tid, PageId p) {
         // some code goes here
         // not necessary for lab1|lab2
-        return false;
+        return lockManager.hasLock(tid, p);
     }
 
     /**
@@ -126,6 +145,12 @@ public class BufferPool {
     public void transactionComplete(TransactionId tid, boolean commit) {
         // some code goes here
         // not necessary for lab1|lab2
+        if (commit) {
+            flushPages(tid);
+        } else {
+            discardPages(tid);
+        }
+        lockManager.releaseAll(tid);
     }
 
     /**
@@ -203,19 +228,33 @@ public class BufferPool {
     /** Remove the specific page id from the buffer pool.
         Needed by the recovery manager to ensure that the
         buffer pool doesn't keep a rolled back page in its
-        cache.
-        
-        Also used by B+ tree files to ensure that deleted pages
-        are removed from the cache so they can be reused safely
-    */
+     cache.
+
+     Also used by B+ tree files to ensure that deleted pages
+     are removed from the cache so they can be reused safely
+     */
     public synchronized void discardPage(PageId pid) {
         // some code goes here
         // not necessary for lab1
         pageManager.remove(pid);
     }
 
+    public synchronized void discardPages(TransactionId transactionId) {
+        Set<PageId> toBeRemoved = Sets.newHashSet();
+        pageManager.traverse(new PageManager.Traverser() {
+            @Override
+            public void action(Page page) {
+                if (transactionId.equals(page.isDirty())) {
+                    toBeRemoved.add(page.getId());
+                }
+            }
+        });
+        toBeRemoved.forEach(this::discardPage);
+    }
+
     /**
      * Flushes a certain page to disk
+     *
      * @param pid an ID indicating the page to flush
      */
     private synchronized void flushPage(PageId pid) throws IOException {
@@ -227,15 +266,16 @@ public class BufferPool {
         }
     }
 
-    /** Write all pages of the specified transaction to disk.
+    /**
+     * Write all pages of the specified transaction to disk.
      */
-    public synchronized void flushPages(TransactionId tid) throws IOException {
+    public synchronized void flushPages(TransactionId tid) {
         // some code goes here
         // not necessary for lab1|lab2
         pageManager.traverse(new PageManager.Traverser() {
             @Override
             public void action(Page page) {
-                if (page.isDirty() != tid) {
+                if (tid.equals(page.isDirty())) {
                     writePage(page);
                 }
             }
