@@ -1,6 +1,7 @@
 package simpledb.storage.lock;
 
 import simpledb.common.Permissions;
+import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
 import java.util.concurrent.TimeUnit;
@@ -14,9 +15,16 @@ public interface Locker {
 
     boolean hasHolder(TransactionId transactionId, Permissions permissions);
 
-    void hold(TransactionId transactionId, Permissions permissions);
-
     void release(TransactionId transactionId);
 
-    boolean tryLock(int time, TimeUnit timeUnit, Permissions permissions) throws InterruptedException;
+    boolean tryLock(LockContext context, int time, TimeUnit timeUnit) throws InterruptedException;
+
+    interface LockContext {
+        TransactionId getTransactionId();
+
+        PageId getPageId();
+
+        Permissions getPermission();
+
+    }
 }

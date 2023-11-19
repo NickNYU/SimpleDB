@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Permissions;
+import simpledb.storage.lock.DefaultLockContext;
 import simpledb.storage.lock.DefaultLockManager;
 import simpledb.storage.lock.LockManager;
 import simpledb.storage.lock.Locker;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -92,7 +94,11 @@ public class BufferPool {
         // some code goes here
         Locker locker = lockManager.getLock(tid, pid);
         try {
-            if (!locker.hasHolder(tid, perm) && !locker.tryLock(2, TimeUnit.SECONDS, perm)) {
+            if (!locker.hasHolder(tid, perm) && !locker.tryLock(DefaultLockContext.builder()
+                            .permissions(perm)
+                            .transactionId(tid)
+                            .pageId(pid).build(),
+                    1, TimeUnit.SECONDS)) {
                 throw new TransactionAbortedException();
             }
             lockManager.record(tid, pid, perm);
@@ -289,12 +295,24 @@ public class BufferPool {
     private synchronized void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        AtomicBoolean isAllDirty = new AtomicBoolean(true);
+        AtomicBoolean stop = new AtomicBoolean(false);
         pageManager.evict(new PageManager.EvictFunction() {
             @Override
             public void action(Page page) {
-                writePage(page);
+                if (stop.get()) {
+                    return;
+                }
+                if (page.isDirty() == null) {
+                    discardPage(page.getId());
+                    stop.set(true);
+                    isAllDirty.set(false);
+                }
             }
         });
+        if (isAllDirty.get()) {
+            throw new DbException("All pages are dirty in buffer pool");
+        }
     }
 
     private void writePage(Page page) {

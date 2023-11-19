@@ -23,7 +23,7 @@ public class PageLockManager implements LockManager {
     public PageLockManager(PageId pageId) {
         this.pageId = pageId;
         this.transactionIds = Sets.newConcurrentHashSet();
-        this.locker = new TransactionLocker();
+        this.locker = new PageTransactionLocker(pageId);
     }
 
     @Override
@@ -36,7 +36,6 @@ public class PageLockManager implements LockManager {
 
     @Override
     public void record(TransactionId transactionId, PageId pageId, Permissions permissions) {
-        locker.hold(transactionId, permissions);
         transactionIds.add(transactionId);
     }
 
@@ -46,6 +45,7 @@ public class PageLockManager implements LockManager {
             throw new IllegalArgumentException("pageId not match, expected: " + this.pageId + ", actual: " + pageId);
         }
         transactionIds.remove(transactionId);
+        locker.release(transactionId);
     }
 
     @Override
