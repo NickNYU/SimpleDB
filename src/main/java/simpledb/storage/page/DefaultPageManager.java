@@ -121,8 +121,17 @@ public class DefaultPageManager implements PageManager {
         }
     }
 
+    /**
+     * if the page is dirty (holds a transactionId), we cannot remove it as it's not able to flush it yet (transaction not finished)
+     */
     private void removeLast() {
         ListNode last = tail.prev;
+        while (last != head && last.page.isDirty() != null) {
+            last = last.prev;
+        }
+        if (last == null) {
+            return;
+        }
         removeNode(last);
         pages.remove(last.page.getId());
     }
