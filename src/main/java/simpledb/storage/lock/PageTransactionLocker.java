@@ -43,7 +43,8 @@ public class PageTransactionLocker implements Locker {
                 // lock has been acquired, but not same with transaction Id given by context (above logic)
                 for (;;) {
                     if (timeoutNano - System.nanoTime() <= 0) {
-                        throw new InterruptedException("timed out: " + context);
+                        System.err.println("timed out: " + context);
+                        return false;
                     }
                     if (lock.get()) {
                         Thread.sleep(1);
@@ -68,7 +69,8 @@ public class PageTransactionLocker implements Locker {
                 }
                 for (;;) {
                     if (timeoutNano - System.nanoTime() <= 0) {
-                        throw new InterruptedException("timed out: " + context);
+                        System.err.println("timed out: " + context);
+                        return false;
                     }
                     if (lock.get() || !isLockUpgradable(context.getTransactionId())) {
                         Thread.sleep(1);
