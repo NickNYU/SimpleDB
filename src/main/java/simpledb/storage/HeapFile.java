@@ -199,6 +199,9 @@ public class HeapFile implements DbFile {
                         .getPage(transactionId,
                                 new HeapPageId(heapFile.getId(), pageNum),
                                 Permissions.READ_ONLY);
+                if (page == null) {
+                    throw new DbException("all page is dirty");
+                }
                 tupleIterator = page.iterator();
                 pageNum ++;
             }

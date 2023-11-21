@@ -1,6 +1,7 @@
 package simpledb.storage.transaction;
 
 import com.google.common.collect.Sets;
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.PageId;
 import simpledb.storage.lock.LockManager;
 import simpledb.transaction.TransactionId;
@@ -26,7 +27,7 @@ public class SimpleTransactionManager implements TransactionManager {
     }
 
     @Override
-    public void addPage(PageId pageId, TransactionId transactionId) {
+    public void addPage(PageId pageId, TransactionId transactionId) throws CycleDetectedException {
         if (!this.transactionId.equals(transactionId)) {
             throw new IllegalArgumentException("transactionId not match, expected: " + this.transactionId
                     + ", actual: " + transactionId);

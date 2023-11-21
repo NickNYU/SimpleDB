@@ -2,6 +2,7 @@ package simpledb.storage.lock;
 
 import com.google.common.collect.Maps;
 import simpledb.common.Permissions;
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.PageId;
 import simpledb.storage.transaction.DefaultTransactionManager;
 import simpledb.storage.transaction.TransactionManager;
@@ -30,7 +31,7 @@ public class DefaultLockManager implements LockManager {
     }
 
     @Override
-    public void record(TransactionId transactionId, PageId pageId, Permissions permissions) {
+    public void record(TransactionId transactionId, PageId pageId, Permissions permissions) throws CycleDetectedException {
         transactionManager.addPage(pageId, transactionId);
         lockers.get(pageId).record(transactionId, pageId, permissions);
     }

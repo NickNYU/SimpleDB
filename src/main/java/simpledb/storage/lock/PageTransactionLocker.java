@@ -5,6 +5,7 @@ import simpledb.common.Permissions;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,6 +20,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class PageTransactionLocker implements Locker {
 
+    private static final Random random = new Random();
     private final PageId pageId;
 
     private final Set<TransactionId> shared = Sets.newConcurrentHashSet();
@@ -37,7 +39,7 @@ public class PageTransactionLocker implements Locker {
         if (context.getTransactionId().equals(exclusive.get())) {
             return true;
         }
-        long timeoutNano = timeUnit.toNanos(time) + System.nanoTime();
+        long timeoutNano = timeUnit.toNanos(time) + System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(random.nextInt(200));
         switch (context.getPermission()) {
             case READ_ONLY:
                 // lock has been acquired, but not same with transaction Id given by context (above logic)

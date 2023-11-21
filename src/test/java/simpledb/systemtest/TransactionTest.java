@@ -92,6 +92,7 @@ public class TransactionTest extends SimpleDbTestBase {
         }
 
         public void run() {
+            System.out.println("[start] task start: " + getId());
             try {
                 // Try to increment the value until we manage to successfully commit
                 while (true) {
@@ -162,6 +163,7 @@ public class TransactionTest extends SimpleDbTestBase {
             } catch (InterruptedException | BrokenBarrierException e) {
                 throw new RuntimeException(e);
             }
+            System.out.println("[end] task complete: " + getId());
             completed = true;
         }
     }

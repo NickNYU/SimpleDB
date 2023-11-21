@@ -1,5 +1,6 @@
 package simpledb.storage.transaction;
 
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.PageId;
 import simpledb.storage.lock.Locker;
 import simpledb.transaction.TransactionId;
@@ -11,7 +12,7 @@ import simpledb.transaction.TransactionId;
  */
 public interface TransactionManager {
 
-    void addPage(PageId pageId, TransactionId transactionId);
+    void addPage(PageId pageId, TransactionId transactionId) throws CycleDetectedException;
 
     void release(TransactionId transactionId);
 
