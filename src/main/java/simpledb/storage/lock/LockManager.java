@@ -1,6 +1,7 @@
 package simpledb.storage.lock;
 
 import simpledb.common.Permissions;
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
@@ -18,7 +19,7 @@ public interface LockManager {
      */
     Locker getLock(TransactionId transactionId, PageId pageId);
 
-    void record(TransactionId transactionId, PageId pageId, Permissions permissions);
+    void record(TransactionId transactionId, PageId pageId, Permissions permissions) throws CycleDetectedException;
 
     /**
      * Returns the lock used for writing.

@@ -2,6 +2,7 @@ package simpledb.storage.lock;
 
 import com.google.common.collect.Sets;
 import simpledb.common.Permissions;
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
@@ -35,7 +36,7 @@ public class PageLockManager implements LockManager {
     }
 
     @Override
-    public void record(TransactionId transactionId, PageId pageId, Permissions permissions) {
+    public void record(TransactionId transactionId, PageId pageId, Permissions permissions) throws CycleDetectedException {
         transactionIds.add(transactionId);
     }
 

@@ -63,4 +63,11 @@ public class HeapPageId implements PageId {
         return data;
     }
 
+    @Override
+    public String toString() {
+        return "HeapPageId{" +
+                "tableId=" + tableId +
+                ", pageNum=" + pageNum +
+                '}';
+    }
 }

@@ -38,6 +38,15 @@ public class DefaultLockContext implements Locker.LockContext {
         return permissions;
     }
 
+    @Override
+    public String toString() {
+        return "DefaultLockContext{" +
+                "transactionId=" + transactionId +
+                ", pageId=" + pageId +
+                ", permissions=" + permissions +
+                '}';
+    }
+
     public static final Builder builder() {
         return new Builder();
     }

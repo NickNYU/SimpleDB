@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import simpledb.common.Database;
 import simpledb.common.DbException;
 import simpledb.common.Permissions;
+import simpledb.core.exception.CycleDetectedException;
 import simpledb.storage.lock.DefaultLockContext;
 import simpledb.storage.lock.DefaultLockManager;
 import simpledb.storage.lock.LockManager;
@@ -98,13 +99,13 @@ public class BufferPool {
                             .permissions(perm)
                             .transactionId(tid)
                             .pageId(pid).build(),
-                    1, TimeUnit.SECONDS)) {
-                throw new TransactionAbortedException();
+                    100, TimeUnit.MILLISECONDS)) {
+                throw new TransactionAbortedException("tid: " + tid + ", pid: " + pid + ", perm: " + perm);
             }
             lockManager.record(tid, pid, perm);
             return pageManager.getOrCreate(pid, tid, perm);
-        } catch (InterruptedException e) {
-            throw new TransactionAbortedException();
+        } catch (InterruptedException | CycleDetectedException e) {
+            throw new TransactionAbortedException(e);
         }
     }
 
