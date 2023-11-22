@@ -39,6 +39,9 @@ public class HeapPageId implements PageId {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+        if (!(o instanceof HeapPageId)) {
+            return false;
+        }
         PageId that = (PageId) o;
         return tableId == that.getTableId() && pageNum == that.getPageNumber();
     }
