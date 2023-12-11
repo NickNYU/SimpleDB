@@ -77,6 +77,9 @@ public class DefaultPageManager implements PageManager {
     @Override
     public void remove(PageId pageId) {
         ListNode node = pages.remove(pageId);
+        if (node == null) {
+            return;
+        }
         removeNode(node);
     }
 

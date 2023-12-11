@@ -35,6 +35,9 @@ public class PageTransactionLocker implements Locker {
 
     @Override
     public boolean tryLock(LockContext context, int time, TimeUnit timeUnit) throws InterruptedException {
+        if (hasHolder(context.getTransactionId(), context.getPermission())) {
+            return true;
+        }
         // if we have exclusive lock, check if transaction Id matches, otherwise going for more lock waiting logic
         if (context.getTransactionId().equals(exclusive.get())) {
             return true;

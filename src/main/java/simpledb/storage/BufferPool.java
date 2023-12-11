@@ -95,7 +95,7 @@ public class BufferPool {
         // some code goes here
         Locker locker = lockManager.getLock(tid, pid);
         try {
-            if (!locker.hasHolder(tid, perm) && !locker.tryLock(DefaultLockContext.builder()
+            if (!locker.tryLock(DefaultLockContext.builder()
                             .permissions(perm)
                             .transactionId(tid)
                             .pageId(pid).build(),
@@ -179,7 +179,7 @@ public class BufferPool {
                                                                     TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
-        HeapFile heapFile = (HeapFile) Database.getCatalog().getDatabaseFile(tableId);
+        DbFile heapFile = Database.getCatalog().getDatabaseFile(tableId);
         List<Page> pages = heapFile.insertTuple(tid, t);
         for (Page page : pages) {
             pageManager.add(page);
