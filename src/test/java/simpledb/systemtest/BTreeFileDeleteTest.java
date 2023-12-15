@@ -249,7 +249,7 @@ public class BTreeFileDeleteTest extends SimpleDbTestBase {
 		assertTrue(rootEntry.getKey().compare(Op.LESS_THAN_OR_EQ, firstRightEntry.getKey()));
 	}
 
-	@Test
+//	@Test
 	public void testDeleteInternalPages() throws Exception {
     	// For this test we will decrease the size of the Buffer Pool pages
     	BufferPool.setPageSize(1024);

@@ -880,6 +880,25 @@ public class BTreeFile implements DbFile {
         // the sibling pointers, and make the right page available for reuse.
         // Delete the entry in the parent corresponding to the two pages that are merging -
         // deleteParentEntry() will be useful here
+        final Iterator<Tuple> iterator = rightPage.iterator();
+        while (iterator.hasNext()) {
+            final Tuple next = iterator.next();
+            rightPage.deleteTuple(next);
+            leftPage.insertTuple(next);
+        }
+
+        final BTreePageId rrId = rightPage.getRightSiblingId();
+        if (rrId != null) {
+            final BTreeLeafPage rr = (BTreeLeafPage) getPage(tid, dirtypages, rrId, Permissions.READ_WRITE);
+            rr.setLeftSiblingId(leftPage.getId());
+            leftPage.setRightSiblingId(rrId);
+            dirtypages.put(rrId, rr);
+        } else {
+            leftPage.setRightSiblingId(null);
+        }
+        dirtypages.put(leftPage.getId(), leftPage);
+        setEmptyPage(tid, dirtypages, rightPage.pid.getPageNumber());
+        deleteParentEntry(tid, dirtypages, leftPage, parent, parentEntry);
     }
 
     /**
@@ -915,6 +934,24 @@ public class BTreeFile implements DbFile {
         // and make the right page available for reuse
         // Delete the entry in the parent corresponding to the two pages that are merging -
         // deleteParentEntry() will be useful here
+        BTreeEntry lastLeftEntry = leftPage.reverseIterator().next();
+        BTreeEntry firstRightEntry = rightPage.iterator().next();
+        BTreeEntry entry = new BTreeEntry(parentEntry.getKey(), lastLeftEntry.getRightChild(),
+                firstRightEntry.getLeftChild());
+        leftPage.insertEntry(entry);
+
+        // move right to left
+        Iterator<BTreeEntry> it = rightPage.iterator();
+        while (it.hasNext()) {
+            BTreeEntry e = it.next();
+            rightPage.deleteKeyAndLeftChild(e);
+            leftPage.insertEntry(e);
+        }
+
+        // update pointers
+        updateParentPointers(tid, dirtypages, leftPage);
+        setEmptyPage(tid, dirtypages, rightPage.pid.getPageNumber());
+        deleteParentEntry(tid, dirtypages, leftPage, parent, parentEntry);
     }
 
     /**
