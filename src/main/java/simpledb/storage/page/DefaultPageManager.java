@@ -6,6 +6,7 @@ import simpledb.common.Permissions;
 import simpledb.storage.*;
 import simpledb.transaction.TransactionId;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -90,7 +91,13 @@ public class DefaultPageManager implements PageManager {
 
     @Override
     public void traverse(Traverser traverser) {
-        pages.forEach((pageId, node) -> {traverser.action(node.page);});
+        pages.forEach((pageId, node) -> {
+            try {
+                traverser.action(node.page);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

@@ -456,8 +456,53 @@ public class LogFile {
             synchronized (this) {
                 preAppend();
                 // some code goes here
+                final Long firstRecordPos = this.tidToFirstLogRecord.get(tid.getId());
+                this.raf.seek(firstRecordPos);
+                final HashSet<PageId> set = new HashSet<>();
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        final int type = raf.readInt();
+                        final long transactionId = raf.readLong();
+                        switch (type) {
+                            /* update record conists of
+                               record type
+                               transaction id
+                               before page data (see writePageData)
+                               after page data
+                               start offset
+                            */
+                            case UPDATE_RECORD: {
+                                final Page beforePage = readPageData(this.raf);
+                                // ignore the after page
+                                readPageData(this.raf);
+                                final PageId pageId = beforePage.getId();
+                                if (transactionId == tid.getId() && set.add(pageId)) {
+                                    // Discard, rewrite page
+                                    Database.getBufferPool().discardPage(beforePage.getId());
+                                    Database.getCatalog().getDatabaseFile(pageId.getTableId()).writePage(beforePage);
+                                }
+                                break;
+                            }
+                            case CHECKPOINT_RECORD: {
+                                skipCheckPointRecord();
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        raf.readLong();
+                    } catch (final EOFException e) {
+                        break;
+                    }
+                }
             }
         }
+    }
+
+    private void skipCheckPointRecord() throws IOException {
+        final int txnCnt = this.raf.readInt();
+        final int skip = txnCnt * 2 * 8;
+        this.raf.skipBytes(skip);
     }
 
     /** Shutdown the logging system, writing out whatever state
