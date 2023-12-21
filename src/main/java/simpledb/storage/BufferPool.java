@@ -153,6 +153,7 @@ public class BufferPool {
         // some code goes here
         // not necessary for lab1|lab2
         if (commit) {
+            flushLogs(tid);
             flushPages(tid);
         } else {
             discardPages(tid);
@@ -223,7 +224,7 @@ public class BufferPool {
             public void action(Page page) {
                 if (page.isDirty() != null) {
                     try {
-                        Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+                        flushPage(page);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -247,29 +248,48 @@ public class BufferPool {
     }
 
     public synchronized void discardPages(TransactionId transactionId) {
-        Set<PageId> toBeRemoved = Sets.newHashSet();
+        Set<Page> toBeRemoved = Sets.newHashSet();
         pageManager.traverse(new PageManager.Traverser() {
             @Override
             public void action(Page page) {
                 if (transactionId.equals(page.isDirty())) {
-                    toBeRemoved.add(page.getId());
+                    toBeRemoved.add(page);
                 }
             }
         });
         toBeRemoved.forEach(this::discardPage);
     }
 
+    private void discardPage(Page page) {
+//        try {
+            pageManager.remove(page.getId());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
     /**
      * Flushes a certain page to disk
      *
-     * @param pid an ID indicating the page to flush
+     * @param page an ID indicating the page to flush
      */
-    private synchronized void flushPage(PageId pid) throws IOException {
+    private synchronized void flushPage(Page page) throws IOException {
         // some code goes here
         // not necessary for lab1
-        Page page = pageManager.get(pid);
-        if (page != null) {
-            writePage(page);
+        try {
+            // for lab6, write update record first
+            if (page.isDirty() != null) {
+                final LogFile logFile = Database.getLogFile();
+                logFile.logWrite(page.isDirty(), page.getBeforeImage(), page);
+                logFile.force();
+            }
+
+            // Write page
+            final DbFile tableFile = Database.getCatalog().getDatabaseFile(page.getId().getTableId());
+            tableFile.writePage(page);
+            page.markDirty(false, null);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -281,9 +301,20 @@ public class BufferPool {
         // not necessary for lab1|lab2
         pageManager.traverse(new PageManager.Traverser() {
             @Override
-            public void action(Page page) {
+            public void action(Page page) throws IOException {
                 if (tid.equals(page.isDirty())) {
-                    writePage(page);
+                    flushPage(page);
+                }
+            }
+        });
+    }
+
+    private synchronized void flushLogs(TransactionId tid) {
+        pageManager.traverse(new PageManager.Traverser() {
+            @Override
+            public void action(Page page) throws IOException {
+                if (tid.equals(page.isDirty())) {
+                    page.setBeforeImage();
                 }
             }
         });

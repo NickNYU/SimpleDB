@@ -206,9 +206,7 @@ public class LogTest extends SimpleDbTestBase {
         // *** Test:
         // insert, abort: data should not be there
         // flush pages directly to heap file to defeat NO-STEAL policy
-
         dontInsert(hf1, 4);
-
         Transaction t = new Transaction();
         t.start();
         look(hf1, t, 1, true);

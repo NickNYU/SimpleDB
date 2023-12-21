@@ -5,6 +5,8 @@ import simpledb.storage.Page;
 import simpledb.storage.PageId;
 import simpledb.transaction.TransactionId;
 
+import java.io.IOException;
+
 /**
  * @author nick
  * @e-mail cz739@nyu.edu
@@ -26,7 +28,7 @@ public interface PageManager {
     void evict(EvictFunction evictFunction);
 
     public interface Traverser {
-        void action(Page page);
+        void action(Page page) throws IOException;
     }
 
     public interface EvictFunction {
