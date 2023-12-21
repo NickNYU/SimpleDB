@@ -519,6 +519,24 @@ public class LogFile {
         }
     }
 
+    private void seekFirstPosition(long checkPoint) throws IOException {
+        this.raf.seek(checkPoint);
+        int type = this.raf.readInt();
+        if (type != CHECKPOINT_RECORD) {
+            throw new InvalidPropertiesFormatException("not checkpoint record sign");
+        }
+        long magicNumber = this.raf.readLong();
+        assert magicNumber == -1;
+        int keySize = this.raf.readInt();
+        long veryFirst = Long.MAX_VALUE;
+        for (int i = 0; i < keySize; i++) {
+            long transactionId = this.raf.readLong();
+            long firstRecord = this.raf.readLong();
+            veryFirst = Math.min(veryFirst, firstRecord);
+        }
+        veryFirst = Math.min(veryFirst, checkPoint);
+        this.raf.seek(veryFirst);
+    }
     /** Recover the database system by ensuring that the updates of
         committed transactions are installed and that the
         updates of uncommitted transactions are not installed.
@@ -528,7 +546,98 @@ public class LogFile {
             synchronized (this) {
                 recoveryUndecided = false;
                 // some code goes here
+
+                this.raf.seek(0);
+                final long cp = raf.readLong();
+                if (cp > 0) {
+                    seekFirstPosition(cp);
+                }
+                long currentTransactionId = -1;
+                final HashMap<Long, List<Page>> beforePages = new HashMap<>();
+                final HashMap<Long, List<Page>> afterPages = new HashMap<>();
+                while (true) {
+                    try {
+                        final int type = this.raf.readInt();
+                        final long tid = this.raf.readLong();
+                        if (currentTransactionId != tid) {
+                            undo(beforePages.remove(tid), afterPages.remove(tid));
+                        }
+                        currentTransactionId = tid;
+                        switch (type) {
+                            case UPDATE_RECORD: {
+                                final Page beforePage = readPageData(raf);
+                                final Page afterPage = readPageData(raf);
+                                beforePages.putIfAbsent(tid, new ArrayList<>());
+                                final List<Page> beforeList = beforePages.get(tid);
+                                beforeList.add(beforePage);
+
+                                afterPages.putIfAbsent(tid, new ArrayList<>());
+                                final List<Page> afterList = afterPages.get(tid);
+                                afterList.add(afterPage);
+                                break;
+                            }
+                            case COMMIT_RECORD: {
+//                                commitIds.add(tid);
+                                System.out.println("commit: " + tid);
+                                redo(beforePages.remove(tid), afterPages.remove(tid));
+                                break;
+                            }
+                            case CHECKPOINT_RECORD: {
+                                skipCheckPointRecord();
+                                break;
+                            }
+                            case ABORT_RECORD: {
+                                System.out.println("abort: " + tid);
+                                undo(beforePages.remove(tid), afterPages.remove(tid));
+                                break;
+                            }
+                        }
+                        raf.readLong();
+                    } catch (final EOFException e) {
+                        break;
+                    }
+                }
+                // Roll back unCommitted txn
+//                beforePages.forEach((tid, pages) -> {
+//                    if (!commitIds.contains(tid)) {
+//                        System.out.println("missing tid: " + tid);
+//                        for (final Page page : pages) {
+//                            try {
+//                                Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//                });
+                // Write commit pages
+//                for (final Long commitId : commitIds) {
+//                    if (afterPages.containsKey(commitId)) {
+//                        final List<Page> pages = afterPages.get(commitId);
+//                        for (final Page page : pages) {
+//                            Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+//                        }
+//                    }
+//                }
             }
+        }
+    }
+
+    private void redo(List<Page> beforePages, List<Page> afterPages) throws IOException {
+        if (afterPages == null) {
+            return;
+        }
+        for (Page page : afterPages) {
+            Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
+        }
+    }
+
+    private void undo(List<Page> beforePages, List<Page> afterPages) throws IOException {
+        if (beforePages == null) {
+            return;
+        }
+        for (Page page : beforePages) {
+            Database.getCatalog().getDatabaseFile(page.getId().getTableId()).writePage(page);
         }
     }
 

@@ -288,6 +288,7 @@ public class BufferPool {
             final DbFile tableFile = Database.getCatalog().getDatabaseFile(page.getId().getTableId());
             tableFile.writePage(page);
             page.markDirty(false, null);
+            page.setBeforeImage();
         } catch (IOException e) {
             e.printStackTrace();
         }
